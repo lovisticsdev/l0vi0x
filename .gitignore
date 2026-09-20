@@ -1,0 +1,28 @@
+# Per-target audit workspaces and private eval data
+audits/
+eval/private/
+
+# Local runtime secrets and generated data
+.env
+.env.*
+*.db
+*.sqlite*
+keys/
+*.key
+out/
+cache/
+
+# Python / tooling caches
+__pycache__/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.venv/
+venv/
+
+# OS/editor noise
+.DS_Store
+Thumbs.db
+
+# The plan
+l0vi0x_build_plan.md
