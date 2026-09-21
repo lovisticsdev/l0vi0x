@@ -92,7 +92,7 @@ def _scope() -> Scope:
 def _trace(*, cheatcodes=None, actor=ACTOR, token=TOKEN, event_ok=True, emit=HARNESS, depth=2):
     frame = {
         "depth": depth, "kind": "call", "to": HARNESS, "caller": WRAPPER,
-        "gas_used": 1000, "logs": [{"event":"AssertionChecked", "id":"A1", "kind":"custom", "target":"credit", "operator":"eq", "expected":7, "ok":event_ok, "emitter":emit}],
+        "gas_used": 1000, "logs": [{"event":"AssertionChecked", "id":"A1", "kind":"custom", "target":"credit", "operator":"eq", "observed":7, "expected":7, "ok":event_ok, "emitter":emit}],
         "erc20_transfer": {"token":token, "from":"0x0000000000000000000000000000000000000000", "to":actor, "amount":7},
     }
     records = [frame]

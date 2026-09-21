@@ -1,24 +1,56 @@
-agent:
-  allow_methods:
-    - eth_chainId
-    - eth_blockNumber
-    - eth_call
-    - eth_getBalance
-    - eth_getCode
-    - eth_getStorageAt
-    - eth_getLogs
-    - eth_getTransactionByHash
-    - eth_getTransactionReceipt
-    - web3_clientVersion
-upstream:
-  allow_methods:
-    - eth_chainId
-    - eth_blockNumber
-    - eth_call
-    - eth_getBalance
-    - eth_getCode
-    - eth_getStorageAt
-    - eth_getLogs
-    - eth_getBlockByNumber
-    - eth_getTransactionByHash
-    - eth_getTransactionReceipt
+endpoints:
+  agent:
+    allow:
+      - eth_chainId
+      - eth_blockNumber
+      - eth_call
+      - eth_getBalance
+      - eth_getCode
+      - eth_getStorageAt
+      - eth_getLogs
+      - eth_getTransactionByHash
+      - eth_getTransactionReceipt
+      - eth_getBlockByNumber
+      - eth_getTransactionCount
+      - eth_estimateGas
+      - eth_gasPrice
+      - eth_feeHistory
+      - evm_snapshot
+      - evm_revert
+      - web3_clientVersion
+    deny_prefixes: [anvil_, hardhat_, eth_sendRawTransaction, eth_sendTransaction, eth_sendUnsignedTransaction, debug_, evm_set, evm_mine, evm_increaseTime, evm_setNextBlockTimestamp]
+  upstream:
+    allow:
+      - eth_chainId
+      - eth_blockNumber
+      - eth_call
+      - eth_getBalance
+      - eth_getCode
+      - eth_getStorageAt
+      - eth_getLogs
+      - eth_getBlockByNumber
+      - eth_getTransactionCount
+      - eth_getTransactionReceipt
+      - eth_estimateGas
+      - eth_gasPrice
+      - eth_feeHistory
+      - debug_traceTransaction
+    deny_prefixes: [anvil_, hardhat_, eth_sendRawTransaction, eth_sendTransaction, eth_sendUnsignedTransaction, eth_sign, personal_, debug_set, debug_traceCall, evm_]
+  cross_check:
+    allow:
+      - eth_chainId
+      - eth_blockNumber
+      - eth_call
+      - eth_getBalance
+      - eth_getCode
+      - eth_getStorageAt
+      - eth_getLogs
+      - eth_getBlockByNumber
+      - eth_getTransactionCount
+      - eth_getTransactionReceipt
+      - eth_estimateGas
+      - eth_gasPrice
+      - eth_feeHistory
+    deny_prefixes: [anvil_, hardhat_, eth_sendRawTransaction, eth_sendTransaction, eth_sendUnsignedTransaction, personal_, debug_, evm_]
+time_advance:
+  allowed_only_via: witness.max_time_advance_s

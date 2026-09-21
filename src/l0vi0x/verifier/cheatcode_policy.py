@@ -19,7 +19,7 @@ def policy_hash(policy_path: Path, catalog_path: Path, foundry_config_path: Path
     return hashlib.sha256(raw).hexdigest()
 
 
-def check(*, trace: TraceSummary | None, witness_class: str, policy_path: Path, catalog_path: Path, foundry_config_path: Path | None = None) -> CheckResult:
+def check(*, trace: TraceSummary | None, witness_class: str, policy_path: Path, catalog_path: Path, foundry_config_path: Path | None = None, fork_block: int | None = None) -> CheckResult:
     if trace is None:
         return CheckResult("V05", False, "TRACE_MISSING", True, "authoritative structured trace is missing")
     if foundry_config_path is not None:
@@ -32,7 +32,7 @@ def check(*, trace: TraceSummary | None, witness_class: str, policy_path: Path, 
             return CheckResult("V05", False, "POLICY_VIOLATION", True, "sanitized Foundry config is missing fail-closed security settings")
     try:
         policy = (yaml.safe_load(policy_path.read_text(encoding="utf-8")) or {}).get("rules", {})
-        enforce_cheatcode_policy(trace, witness_class=witness_class, policy=policy)
+        enforce_cheatcode_policy(trace, witness_class=witness_class, policy=policy, fork_block=fork_block)
     except (TracePolicyError, OSError, yaml.YAMLError) as exc:
         code = "HARNESS_TAMPERED" if "harness" in str(exc).lower() else "POLICY_VIOLATION"
         return CheckResult("V05", False, code, True, str(exc))

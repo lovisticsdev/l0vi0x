@@ -1,4 +1,4 @@
-# Canonical M0 cheatcode catalog. Anything absent is forbidden by default.
+# Canonical M1 trace catalog. Anything absent is UNCLASSIFIED and forbidden by default.
 categories:
   prank: impersonation
   startPrank: impersonation
@@ -7,6 +7,9 @@ categories:
   etch: code_mutation
   store: storage_mutation
   load: storage_read
+  mockCall: code_mutation
+  mockCallRevert: code_mutation
+  setNonce: state_mint
   warp: time_advance
   roll: block_advance
   hoax: compound_impersonation
@@ -20,3 +23,4 @@ categories:
   readFile: filesystem_io
   writeFile: filesystem_io
   setEnv: environment_io
+  createSelectFork: fork_control

@@ -1,15 +1,15 @@
-# M0 policy is default-deny. M1 trace enforcement consumes the same vocabulary.
+# Authoritative policy for structured traces. Names absent from the catalog are denied.
 rules:
   deployed_fork:
     setup:
-      allow_categories: [diagnostics, assertion]
+      allow_categories: [diagnostics, assertion, fork_control]
     witness:
       allow_categories: [diagnostics, assertion, time_advance, block_advance]
     default:
       allow_categories: [diagnostics, assertion]
   local_deployment:
     setup:
-      allow_categories: [diagnostics, assertion, state_mint, code_mutation, storage_mutation, impersonation, impersonation_control, compound_impersonation]
+      allow_categories: [diagnostics, assertion, state_mint, code_mutation, storage_mutation, storage_read, impersonation, impersonation_control, compound_impersonation]
     witness:
       allow_categories: [diagnostics, assertion, impersonation, impersonation_control, compound_impersonation, time_advance, block_advance]
     default:

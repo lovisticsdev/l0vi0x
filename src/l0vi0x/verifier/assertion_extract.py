@@ -7,17 +7,30 @@ from .types import CheckResult, ControlEvidence
 
 
 def _matches(assertion: Any, event: dict[str, Any]) -> bool:
-    fields = {
-        "id": assertion.id,
-        "kind": assertion.kind,
-        "target": assertion.target,
-        "operator": assertion.operator,
-        "expected": assertion.expected,
-    }
-    for key, value in fields.items():
-        if str(event.get(key)) != str(value):
+    for key in ("id", "kind", "target"):
+        if str(event.get(key)) != str(getattr(assertion, key)):
             return False
-    return bool(event.get("ok"))
+    if str(event.get("expected")) != str(assertion.expected):
+        return False
+    if "observed" not in event:
+        return False
+    observed = event["observed"]
+    expected = assertion.expected
+    op = assertion.operator
+    try:
+        relation = {
+            "eq": observed == expected,
+            "neq": observed != expected,
+            "gt": observed > expected,
+            "gte": observed >= expected,
+            "lt": observed < expected,
+            "lte": observed <= expected,
+            "holds": bool(observed),
+            "violated": not bool(observed),
+        }[op]
+    except (KeyError, TypeError):
+        return False
+    return bool(event.get("ok")) == bool(relation) and bool(event.get("ok"))
 
 
 def check(*, witness: Witness, assertion_events: tuple[dict[str, Any], ...], control: ControlEvidence | None) -> CheckResult:

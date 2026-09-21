@@ -11,7 +11,7 @@ FORBIDDEN_KEYS = {
     "preprocessor", "permissions",
 }
 IGNORED_SECURITY_OVERRIDES = {"ffi", "fs_permissions", "rpc_endpoints"}
-ALLOWED_PROFILE_KEYS = {"src", "test", "out", "libs", "solc_version", "evm_version", "optimizer", "optimizer_runs"}
+ALLOWED_PROFILE_KEYS = {"src", "test", "out", "libs", "solc_version", "evm_version", "optimizer", "optimizer_runs", "dynamic_test_linking", "always_use_create_2_factory"}
 
 
 def _validate_no_forbidden(value: Any, path: str = "foundry") -> None:
@@ -48,13 +48,14 @@ def _seed_hex(value: int | str) -> str:
 def _render_toml(config: dict[str, Any]) -> str:
     p = config["profile"]["default"]
     lines = ["[profile.default]"]
-    for key in ("src", "test", "out", "solc_version", "evm_version"):
+    for key in ("src", "test", "out", "solc_version", "evm_version", "block_timestamp", "block_number", "chain_id", "bytecode_hash"):
         if key in p and p[key] not in (None, ""):
             lines.append(f"{key} = {_quote(str(p[key]))}")
     lines.append(f"libs = []")
     lines.append("ffi = false")
     lines.append("fs_permissions = []")
-    lines.append("always_use_create_2_factory = true")
+    lines.append("always_use_create_2_factory = false")
+    lines.append("dynamic_test_linking = false")
     lines.append(f"optimizer = {str(bool(p.get('optimizer', True))).lower()}")
     lines.append(f"optimizer_runs = {int(p.get('optimizer_runs', 200))}")
     lines.append("")
@@ -100,6 +101,12 @@ def sanitize_foundry_config(
         "optimizer_runs": int(compiler.get("optimizer_runs", 200)),
         "solc_version": compiler.get("solc", compiler.get("solc_version", "")),
         "evm_version": compiler.get("evm_version", ""),
+        "dynamic_test_linking": False,
+        "always_use_create_2_factory": False,
+        "block_timestamp": 1,
+        "block_number": 1,
+        "chain_id": 31337,
+        "bytecode_hash": "none",
         "fuzz": {"runs": int(fuzz_runs), "seed": int(fuzz_seed)},
     })
     sanitized = {"profile": {"default": default}, "gate_url": gate_url, "security": {"ffi": False, "fs_permissions": [], "libs": []}}

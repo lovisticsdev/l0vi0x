@@ -46,5 +46,5 @@ def test_policy_files_are_present_and_nonempty():
 def test_rpc_policy_has_separate_agent_and_upstream_allowlists():
     import yaml
     data = yaml.safe_load((ROOT / "config/policy/rpc_allowlist.yaml").read_text(encoding="utf-8"))
-    assert data["agent"]["allow_methods"]
-    assert data["upstream"]["allow_methods"]
+    assert data["endpoints"]["agent"]["allow"]
+    assert data["endpoints"]["upstream"]["allow"]

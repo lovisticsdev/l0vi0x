@@ -6,10 +6,17 @@ import json
 from pathlib import Path
 import secrets
 from threading import Lock
-from typing import Any, Callable, Mapping
+from typing import Any
 from urllib.request import Request, urlopen
 
 import yaml
+
+
+_WRITE_OR_ADMIN_PREFIXES = (
+    "anvil_", "hardhat_", "evm_set", "evm_mine", "evm_increasetime", "evm_setnextblocktimestamp",
+    "eth_sendrawtransaction", "eth_sendtransaction", "eth_sendunsignedtransaction", "eth_sign",
+    "personal_", "debug_set", "debug_tracecall",
+)
 
 
 @dataclass(frozen=True, slots=True)
@@ -21,13 +28,17 @@ class GateDecision:
 
 
 class RpcGate:
-    """Allowlist/authentication/recording policy for the two gate endpoints.
+    """Transport-neutral fail-closed RPC policy and audit logger."""
 
-    The class is transport-neutral so tests can exercise fail-closed behavior without Docker.
-    The HTTP server in docker/rpc_gate.py delegates to the same rules.
-    """
-
-    def __init__(self, policy_path: str | Path, *, audit_id: str, log_dir: str | Path, agent_token: str | None = None, upstream_token: str | None = None) -> None:
+    def __init__(
+        self,
+        policy_path: str | Path,
+        *,
+        audit_id: str,
+        log_dir: str | Path,
+        agent_token: str | None = None,
+        upstream_token: str | None = None,
+    ) -> None:
         self.policy_path = Path(policy_path)
         self.audit_id = audit_id
         self.log_dir = Path(log_dir)
@@ -35,30 +46,48 @@ class RpcGate:
         self.agent_token = agent_token or secrets.token_urlsafe(24)
         self.upstream_token = upstream_token or secrets.token_urlsafe(24)
         self._lock = Lock()
-        self.policy = yaml.safe_load(self.policy_path.read_text(encoding="utf-8"))
+        self.policy = yaml.safe_load(self.policy_path.read_text(encoding="utf-8")) or {}
 
     def decision(self, endpoint: str, method: str, token: str | None) -> GateDecision:
-        if endpoint not in {"agent", "upstream"}:
+        if endpoint not in {"agent", "upstream", "cross_check"}:
             return GateDecision(False, 404, -32601, "unknown endpoint")
-        expected = self.agent_token if endpoint == "agent" else self.upstream_token
+        expected = {
+            "agent": self.agent_token,
+            "upstream": self.upstream_token,
+            "cross_check": self.upstream_token,
+        }[endpoint]
         if not token or not secrets.compare_digest(token, expected):
             return GateDecision(False, 401, -32001, "authentication failed")
-        allowed = set(self.policy.get(endpoint, {}).get("allow_methods", []))
-        if method not in allowed:
+
+        endpoint_cfg = _endpoint_config(self.policy, endpoint)
+        allow = set(endpoint_cfg.get("allow", endpoint_cfg.get("allow_methods", [])))
+        denied_prefixes = {str(p).lower() for p in endpoint_cfg.get("deny_prefixes", [])}
+        method_l = method.lower()
+        if any(method_l.startswith(prefix) for prefix in denied_prefixes):
             return GateDecision(False, 403, -32601, "RPC method denied")
-        if endpoint == "upstream" and method.lower().startswith(("evm_", "anvil_", "hardhat_", "debug_")):
-            return GateDecision(False, 403, -32601, "upstream write/admin method denied")
+        if endpoint in {"upstream", "cross_check"} and any(method_l.startswith(prefix) for prefix in _WRITE_OR_ADMIN_PREFIXES):
+            return GateDecision(False, 403, -32601, "RPC method denied")
+        if method not in allow:
+            return GateDecision(False, 403, -32601, "RPC method denied")
         return GateDecision(True, 200, None)
 
-    def record(self, *, endpoint: str, method: str, result_code: int, latency_ms: int, params: Any, allowed: bool) -> Path:
-        safe_params = _redact_params(params)
+    def record(
+        self,
+        *,
+        endpoint: str,
+        method: str,
+        result_code: int,
+        latency_ms: int,
+        params: Any,
+        allowed: bool,
+    ) -> Path:
         payload = {
             "endpoint": endpoint,
             "method": method,
             "audit_id": self.audit_id,
             "result_code": result_code,
             "latency_ms": latency_ms,
-            "params": safe_params,
+            "params": _redact_params(params),
             "allowed": allowed,
         }
         digest = hashlib.sha256(json.dumps(payload, sort_keys=True, separators=(",", ":")).encode()).hexdigest()[:16]
@@ -68,7 +97,16 @@ class RpcGate:
                 fh.write(json.dumps(payload, sort_keys=True, separators=(",", ":")) + "\n")
         return path
 
-    def forward(self, *, endpoint: str, method: str, params: Any = None, url: str, token: str, timeout_s: float = 30.0) -> dict[str, Any]:
+    def forward(
+        self,
+        *,
+        endpoint: str,
+        method: str,
+        params: Any = None,
+        url: str,
+        token: str,
+        timeout_s: float = 30.0,
+    ) -> dict[str, Any]:
         import time
 
         decision = self.decision(endpoint, method, token)
@@ -80,7 +118,7 @@ class RpcGate:
         started = time.monotonic()
         try:
             with urlopen(request, timeout=timeout_s) as response:
-                body = response.read().decode()
+                body = response.read().decode("utf-8")
                 status = response.status
             out = json.loads(body)
         except Exception as exc:
@@ -91,15 +129,34 @@ class RpcGate:
         return out
 
 
+def _endpoint_config(policy: dict[str, Any], endpoint: str) -> dict[str, Any]:
+    endpoints = policy.get("endpoints")
+    if isinstance(endpoints, dict) and isinstance(endpoints.get(endpoint), dict):
+        return endpoints[endpoint]
+    legacy = policy.get(endpoint)
+    return legacy if isinstance(legacy, dict) else {}
+
+
 def _redact_params(params: Any) -> Any:
     if isinstance(params, dict):
         redacted = {}
         for k, v in params.items():
             lk = str(k).lower()
-            redacted[k] = "<redacted>" if any(secret in lk for secret in ("key", "token", "secret", "password", "mnemonic")) else _redact_params(v)
+            if any(secret in lk for secret in ("key", "token", "secret", "password", "mnemonic", "credential", "private")):
+                redacted[k] = "<redacted>"
+            else:
+                redacted[k] = _redact_params(v)
         return redacted
     if isinstance(params, list):
         return [_redact_params(v) for v in params]
+    if isinstance(params, str):
+        # Strings themselves may be raw URLs or credentials embedded in query/userinfo.
+        from urllib.parse import urlsplit, urlunsplit
+        parts = urlsplit(params)
+        if parts.scheme and parts.netloc:
+            host = parts.hostname or ""
+            netloc = host + (f":{parts.port}" if parts.port is not None else "")
+            return urlunsplit((parts.scheme, netloc, "", "", ""))
     return params
 
 
@@ -109,12 +166,15 @@ class RpcGateClient:
         self.token = token
         self.timeout_s = timeout_s
 
-    def call(self, method: str, params: list[Any] | None = None) -> dict[str, Any]:
+    def call(self, method: str, params: list[Any] | None = None, *, endpoint: str = "agent") -> dict[str, Any]:
         request = Request(
-            self.gate_url + "/agent",
+            self.gate_url + f"/{endpoint}",
             data=json.dumps({"jsonrpc": "2.0", "id": 1, "method": method, "params": params or []}).encode(),
             headers={"Content-Type": "application/json", "Authorization": f"Bearer {self.token}"},
             method="POST",
         )
-        with urlopen(request, timeout=self.timeout_s) as response:
-            return json.loads(response.read().decode())
+        try:
+            with urlopen(request, timeout=self.timeout_s) as response:
+                return json.loads(response.read().decode("utf-8"))
+        except Exception as exc:
+            return {"jsonrpc": "2.0", "id": 1, "error": {"code": -32002, "message": str(exc)}}

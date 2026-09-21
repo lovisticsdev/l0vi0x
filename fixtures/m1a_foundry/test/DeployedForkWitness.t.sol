@@ -17,6 +17,7 @@ contract DeployedForkWitness {
 
     function setUp() public {
         vm.createSelectFork(vm.envString("GATE_URL"), FORK_BLOCK);
+        target = M1aTarget(0x5fbdb2315678afecb367f032d93f642f64180aa3);
         // Fixture target state is already present in the pinned fork. The harness is deployment-only setup.
         factory = new Create2HarnessFactory();
         bytes memory initCode = abi.encodePacked(type(WitnessHarness).creationCode, abi.encode(address(factory)));

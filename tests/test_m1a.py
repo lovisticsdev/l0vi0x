@@ -117,7 +117,7 @@ def test_deployed_fork_witness_denies_mutation_cheatcodes():
 
 
 def test_local_setup_allows_declared_setup_mutation_but_not_external_io():
-    payload = {"trace": [
+    payload = {"initial_timestamp": 1000, "initial_block": 1, "trace": [
         {"depth": 1, "phase": "setup", "to": "0x7109709ecfa91a80626ff3989d68f67f5b1dd12d", "cheatcode": "deal", "args": ["0x"+"aa"*20, 100]},
         {"depth": 1, "phase": "witness", "to": "0x7109709ecfa91a80626ff3989d68f67f5b1dd12d", "cheatcode": "warp", "absolute": 1001},
     ]}
@@ -165,7 +165,7 @@ def test_local_and_fork_replays_issue_3_run_certificates(tmp_path):
         def execute(*, witness, copy_root, run_index):
             assert not (copy_root / "certificate.key").exists()
             assert copy_root != ROOT
-            return {"passed": True, "trace_json": base_trace, "control_sha256": "c"*64}
+            return {"passed": True, "trace_json": base_trace, "control_sha256": "c"*64, "environment_hash": witness.env_hash}
         coord = ReplayCoordinator(repo_root=ROOT, replay_root=tmp_path / "replays" / cls, executor=CallableReplayExecutor(execute), cheatcode_catalog=CATALOG, cheatcode_policy=POLICY)
         cert = coord.run(witness, runs=3, audit_id="A-1", key=key, certificate_id=f"CERT-{cls}")
         assert cert.runs == 3
@@ -181,13 +181,13 @@ def test_replay_distinguishes_environment_and_trace_nondeterminism(tmp_path):
     trace_b = {"initial_timestamp": 1000, "initial_block": 10, "trace": [{"depth":1,"kind":"call","to":"0x"+"13"*20}]}
     def env_exec(*, witness, copy_root, run_index):
         counter["env"] += 1
-        return {"passed": True, "trace_json": trace_a, "control_sha256": "c"*64}
+        return {"passed": True, "trace_json": trace_a, "control_sha256": "c"*64, "environment_hash": witness.env_hash}
     coord = ReplayCoordinator(repo_root=ROOT, replay_root=tmp_path / "r1", executor=CallableReplayExecutor(env_exec), cheatcode_catalog=CATALOG, cheatcode_policy=POLICY)
     # The environment hash is witness-bound; a future executor may supply an observed per-run hash. This hook is intentionally tested by the coordinator through witness hash stability.
     cert = coord.run(witness, runs=3, audit_id="A", key=key)
     assert cert.runs == 3
     def trace_exec(*, witness, copy_root, run_index):
-        return {"passed": True, "trace_json": trace_a if run_index < 3 else trace_b, "control_sha256": "c"*64}
+        return {"passed": True, "trace_json": trace_a if run_index < 3 else trace_b, "control_sha256": "c"*64, "environment_hash": witness.env_hash}
     coord2 = ReplayCoordinator(repo_root=ROOT, replay_root=tmp_path / "r2", executor=CallableReplayExecutor(trace_exec), cheatcode_catalog=CATALOG, cheatcode_policy=POLICY)
     with pytest.raises(ValueError, match="NONDETERMINISTIC_TRACE"):
         coord2.run(witness, runs=3, audit_id="A", key=key)

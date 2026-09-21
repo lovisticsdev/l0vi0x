@@ -48,6 +48,8 @@ def compute_env_hash(
     expected_wrapper_depth: int,
     wrapper_callsite_sha256: str,
     tool_versions: dict[str, str] | None = None,
+    initial_timestamp: int | None = None,
+    initial_block: int | None = None,
 ) -> str:
     payload = {
         "compiler": compiler,
@@ -67,8 +69,53 @@ def compute_env_hash(
         "expected_wrapper_depth": expected_wrapper_depth,
         "wrapper_callsite_sha256": wrapper_callsite_sha256,
         "tool_versions": tool_versions or {},
+        "initial_timestamp": initial_timestamp,
+        "initial_block": initial_block,
     }
     return hashlib.sha256(json.dumps(payload, sort_keys=True, separators=(",", ":"), default=str).encode()).hexdigest()
+
+
+def marked_region_sha256(text: str, marker: str) -> str:
+    begin = f"// BEGIN {marker}"
+    end = f"// END {marker}"
+    start = text.find(begin)
+    finish = text.find(end)
+    if start < 0 or finish < 0 or finish <= start:
+        raise ValueError(f"missing or invalid marked region: {marker}")
+    payload_start = start + len(begin)
+    return hashlib.sha256(text[payload_start:finish].encode("utf-8")).hexdigest()
+
+
+def create_address(deployer: str, nonce: int) -> str:
+    if nonce < 0:
+        raise ValueError("nonce must be non-negative")
+    if nonce >= 2**256:
+        raise ValueError("nonce out of range")
+    # Minimal RLP for [address, nonce]. Addresses are fixed 20-byte strings; nonces are canonically encoded.
+    addr = _hex_address(deployer)
+    if nonce == 0:
+        enc_nonce = b"\x80"
+    else:
+        raw = nonce.to_bytes((nonce.bit_length() + 7) // 8, "big")
+        enc_nonce = bytes([len(raw)]) + raw if len(raw) < 56 else _rlp_long_string(raw)
+    payload = bytes([0x80 + len(addr)]) + addr + enc_nonce
+    if len(payload) < 56:
+        encoded = bytes([0xc0 + len(payload)]) + payload
+    else:
+        encoded = _rlp_long_list(payload)
+    return "0x" + keccak(encoded)[-20:].hex()
+
+
+def _rlp_long_string(raw: bytes) -> bytes:
+    length = len(raw)
+    lb = length.to_bytes((length.bit_length() + 7) // 8, "big")
+    return bytes([0xb7 + len(lb)]) + lb + raw
+
+
+def _rlp_long_list(payload: bytes) -> bytes:
+    length = len(payload)
+    lb = length.to_bytes((length.bit_length() + 7) // 8, "big")
+    return bytes([0xf7 + len(lb)]) + lb + payload
 
 
 def validate_assertion_kinds(assertions: Iterable[WitnessAssertion], allowed_kinds: Iterable[str]) -> None:

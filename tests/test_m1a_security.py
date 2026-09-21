@@ -51,7 +51,7 @@ def test_cumulative_time_and_block_limits_are_enforced():
 def test_rpc_gate_denies_upstream_admin_even_when_allowlist_is_broadened(tmp_path):
     policy=ROOT/"config/policy/rpc_allowlist.yaml"
     gate=RpcGate(policy,audit_id="A-1",log_dir=tmp_path)
-    gate.policy["upstream"]["allow_methods"].append("debug_traceCall")
+    gate.policy["endpoints"]["upstream"]["allow"].append("debug_traceCall")
     decision=gate.decision("upstream","debug_traceCall",gate.upstream_token)
     assert not decision.allowed and decision.status == 403
 
