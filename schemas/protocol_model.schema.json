@@ -1,0 +1,595 @@
+{
+  "$defs": {
+    "Actor": {
+      "additionalProperties": false,
+      "properties": {
+        "capabilities": {
+          "items": {
+            "$ref": "#/$defs/Capability"
+          },
+          "title": "Capabilities",
+          "type": "array"
+        },
+        "id": {
+          "title": "Id",
+          "type": "string"
+        },
+        "kind": {
+          "enum": [
+            "user",
+            "role",
+            "contract",
+            "keeper",
+            "oracle",
+            "external_protocol",
+            "attacker",
+            "admin"
+          ],
+          "title": "Kind",
+          "type": "string"
+        },
+        "spans": {
+          "items": {
+            "$ref": "#/$defs/Span"
+          },
+          "title": "Spans",
+          "type": "array"
+        }
+      },
+      "required": [
+        "id",
+        "kind"
+      ],
+      "title": "Actor",
+      "type": "object"
+    },
+    "Capability": {
+      "enum": [
+        "permissionless",
+        "flash_loan",
+        "donation",
+        "reentrancy_hook",
+        "malicious_token_or_receiver",
+        "oracle_manipulation",
+        "ordering_mev",
+        "cross_protocol_call"
+      ],
+      "title": "Capability",
+      "type": "string"
+    },
+    "CompositionModel": {
+      "additionalProperties": false,
+      "properties": {
+        "edge_kind": {
+          "title": "Edge Kind",
+          "type": "string"
+        },
+        "parent_module_ids": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Parent Module Ids",
+          "type": "array"
+        },
+        "rationale": {
+          "title": "Rationale",
+          "type": "string"
+        }
+      },
+      "required": [
+        "parent_module_ids",
+        "edge_kind",
+        "rationale"
+      ],
+      "title": "CompositionModel",
+      "type": "object"
+    },
+    "EconomicModel": {
+      "additionalProperties": false,
+      "properties": {
+        "fee_equations": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Fee Equations",
+          "type": "array"
+        },
+        "numeraire": {
+          "title": "Numeraire",
+          "type": "string"
+        },
+        "price_dependencies": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Price Dependencies",
+          "type": "array"
+        },
+        "value_sources": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Value Sources",
+          "type": "array"
+        }
+      },
+      "required": [
+        "numeraire"
+      ],
+      "title": "EconomicModel",
+      "type": "object"
+    },
+    "EntryPoint": {
+      "additionalProperties": false,
+      "properties": {
+        "accepts_arbitrary_token_address": {
+          "title": "Accepts Arbitrary Token Address",
+          "type": "boolean"
+        },
+        "access": {
+          "title": "Access",
+          "type": "string"
+        },
+        "delegatecall_or_module_or_multicall": {
+          "title": "Delegatecall Or Module Or Multicall",
+          "type": "boolean"
+        },
+        "id": {
+          "title": "Id",
+          "type": "string"
+        },
+        "makes_external_call": {
+          "title": "Makes External Call",
+          "type": "boolean"
+        },
+        "moves_value": {
+          "title": "Moves Value",
+          "type": "boolean"
+        },
+        "price_or_slippage_sensitive": {
+          "title": "Price Or Slippage Sensitive",
+          "type": "boolean"
+        },
+        "reads_price_or_balance": {
+          "title": "Reads Price Or Balance",
+          "type": "boolean"
+        },
+        "reads_spot_price": {
+          "title": "Reads Spot Price",
+          "type": "boolean"
+        },
+        "signature": {
+          "title": "Signature",
+          "type": "string"
+        },
+        "span": {
+          "$ref": "#/$defs/Span"
+        },
+        "token_or_receiver_callback": {
+          "title": "Token Or Receiver Callback",
+          "type": "boolean"
+        },
+        "uses_balanceof_or_totalassets": {
+          "title": "Uses Balanceof Or Totalassets",
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "id",
+        "signature",
+        "access",
+        "span",
+        "moves_value",
+        "reads_price_or_balance",
+        "uses_balanceof_or_totalassets",
+        "makes_external_call",
+        "token_or_receiver_callback",
+        "accepts_arbitrary_token_address",
+        "reads_spot_price",
+        "price_or_slippage_sensitive",
+        "delegatecall_or_module_or_multicall"
+      ],
+      "title": "EntryPoint",
+      "type": "object"
+    },
+    "ExternalDependency": {
+      "additionalProperties": false,
+      "properties": {
+        "address": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Address"
+        },
+        "id": {
+          "title": "Id",
+          "type": "string"
+        },
+        "kind": {
+          "title": "Kind",
+          "type": "string"
+        },
+        "trust_assumption": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Trust Assumption"
+        }
+      },
+      "required": [
+        "id",
+        "kind"
+      ],
+      "title": "ExternalDependency",
+      "type": "object"
+    },
+    "IntentImplementationGap": {
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "title": "Id",
+          "type": "string"
+        },
+        "implementation": {
+          "title": "Implementation",
+          "type": "string"
+        },
+        "intent": {
+          "title": "Intent",
+          "type": "string"
+        },
+        "spans": {
+          "items": {
+            "$ref": "#/$defs/Span"
+          },
+          "title": "Spans",
+          "type": "array"
+        },
+        "status": {
+          "default": "unresolved",
+          "enum": [
+            "unresolved",
+            "resolved",
+            "disputed"
+          ],
+          "title": "Status",
+          "type": "string"
+        }
+      },
+      "required": [
+        "id",
+        "intent",
+        "implementation"
+      ],
+      "title": "IntentImplementationGap",
+      "type": "object"
+    },
+    "LedgerModel": {
+      "additionalProperties": false,
+      "properties": {
+        "assets": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Assets",
+          "type": "array"
+        },
+        "conservation_equations": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Conservation Equations",
+          "type": "array"
+        },
+        "liabilities": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Liabilities",
+          "type": "array"
+        },
+        "solvency_equations": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Solvency Equations",
+          "type": "array"
+        }
+      },
+      "title": "LedgerModel",
+      "type": "object"
+    },
+    "ModuleSlice": {
+      "additionalProperties": false,
+      "properties": {
+        "files": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Files",
+          "type": "array"
+        },
+        "id": {
+          "title": "Id",
+          "type": "string"
+        },
+        "protocol_types": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Protocol Types",
+          "type": "array"
+        },
+        "roles_detected": {
+          "additionalProperties": {
+            "items": {
+              "$ref": "#/$defs/Span"
+            },
+            "type": "array"
+          },
+          "title": "Roles Detected",
+          "type": "object"
+        }
+      },
+      "required": [
+        "id",
+        "files",
+        "protocol_types",
+        "roles_detected"
+      ],
+      "title": "ModuleSlice",
+      "type": "object"
+    },
+    "Span": {
+      "additionalProperties": false,
+      "properties": {
+        "end": {
+          "minimum": 1,
+          "title": "End",
+          "type": "integer"
+        },
+        "file": {
+          "title": "File",
+          "type": "string"
+        },
+        "sha256": {
+          "title": "Sha256",
+          "type": "string"
+        },
+        "start": {
+          "minimum": 1,
+          "title": "Start",
+          "type": "integer"
+        }
+      },
+      "required": [
+        "file",
+        "start",
+        "end",
+        "sha256"
+      ],
+      "title": "Span",
+      "type": "object"
+    },
+    "StateModel": {
+      "additionalProperties": false,
+      "properties": {
+        "fields": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Fields",
+          "type": "array"
+        },
+        "id": {
+          "title": "Id",
+          "type": "string"
+        },
+        "readers": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Readers",
+          "type": "array"
+        },
+        "writers": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Writers",
+          "type": "array"
+        }
+      },
+      "required": [
+        "id",
+        "fields"
+      ],
+      "title": "StateModel",
+      "type": "object"
+    },
+    "TransitionModel": {
+      "additionalProperties": false,
+      "properties": {
+        "actor_ids": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Actor Ids",
+          "type": "array"
+        },
+        "effects": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Effects",
+          "type": "array"
+        },
+        "from_state": {
+          "title": "From State",
+          "type": "string"
+        },
+        "id": {
+          "title": "Id",
+          "type": "string"
+        },
+        "preconditions": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Preconditions",
+          "type": "array"
+        },
+        "to_state": {
+          "title": "To State",
+          "type": "string"
+        }
+      },
+      "required": [
+        "id",
+        "from_state",
+        "to_state"
+      ],
+      "title": "TransitionModel",
+      "type": "object"
+    },
+    "TrustCapability": {
+      "additionalProperties": false,
+      "properties": {
+        "actor_id": {
+          "title": "Actor Id",
+          "type": "string"
+        },
+        "allowed_actions": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Allowed Actions",
+          "type": "array"
+        },
+        "capability": {
+          "$ref": "#/$defs/Capability"
+        },
+        "id": {
+          "title": "Id",
+          "type": "string"
+        }
+      },
+      "required": [
+        "id",
+        "actor_id",
+        "capability"
+      ],
+      "title": "TrustCapability",
+      "type": "object"
+    }
+  },
+  "additionalProperties": false,
+  "properties": {
+    "actors": {
+      "items": {
+        "$ref": "#/$defs/Actor"
+      },
+      "title": "Actors",
+      "type": "array"
+    },
+    "audit_id": {
+      "title": "Audit Id",
+      "type": "string"
+    },
+    "commit": {
+      "title": "Commit",
+      "type": "string"
+    },
+    "composition": {
+      "items": {
+        "$ref": "#/$defs/CompositionModel"
+      },
+      "title": "Composition",
+      "type": "array"
+    },
+    "economics": {
+      "$ref": "#/$defs/EconomicModel"
+    },
+    "entrypoints": {
+      "items": {
+        "$ref": "#/$defs/EntryPoint"
+      },
+      "title": "Entrypoints",
+      "type": "array"
+    },
+    "external_deps": {
+      "items": {
+        "$ref": "#/$defs/ExternalDependency"
+      },
+      "title": "External Deps",
+      "type": "array"
+    },
+    "intent_vs_impl": {
+      "items": {
+        "$ref": "#/$defs/IntentImplementationGap"
+      },
+      "title": "Intent Vs Impl",
+      "type": "array"
+    },
+    "ledger": {
+      "$ref": "#/$defs/LedgerModel"
+    },
+    "modules": {
+      "items": {
+        "$ref": "#/$defs/ModuleSlice"
+      },
+      "title": "Modules",
+      "type": "array"
+    },
+    "state_schema": {
+      "items": {
+        "$ref": "#/$defs/StateModel"
+      },
+      "title": "State Schema",
+      "type": "array"
+    },
+    "transitions": {
+      "items": {
+        "$ref": "#/$defs/TransitionModel"
+      },
+      "title": "Transitions",
+      "type": "array"
+    },
+    "trust_capabilities": {
+      "items": {
+        "$ref": "#/$defs/TrustCapability"
+      },
+      "title": "Trust Capabilities",
+      "type": "array"
+    }
+  },
+  "required": [
+    "audit_id",
+    "commit",
+    "actors",
+    "modules",
+    "entrypoints",
+    "state_schema",
+    "trust_capabilities",
+    "external_deps",
+    "ledger",
+    "transitions",
+    "economics",
+    "composition",
+    "intent_vs_impl"
+  ],
+  "title": "ProtocolModel",
+  "type": "object"
+}

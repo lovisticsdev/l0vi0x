@@ -1,0 +1,11 @@
+version: 1
+tools:
+  forge: {binary: forge, timeout_s: 900}
+  anvil: {binary: anvil, timeout_s: 120}
+  cast: {binary: cast, timeout_s: 120}
+  slither: {binary: slither, timeout_s: 900}
+  aderyn: {binary: aderyn, timeout_s: 900}
+  medusa: {binary: medusa, timeout_s: 900}
+  echidna: {binary: echidna, timeout_s: 900}
+  halmos: {binary: halmos, timeout_s: 900}
+  solc-select: {binary: solc-select, timeout_s: 120}

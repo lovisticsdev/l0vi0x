@@ -1,0 +1,141 @@
+{
+  "$defs": {
+    "Span": {
+      "additionalProperties": false,
+      "properties": {
+        "end": {
+          "minimum": 1,
+          "title": "End",
+          "type": "integer"
+        },
+        "file": {
+          "title": "File",
+          "type": "string"
+        },
+        "sha256": {
+          "title": "Sha256",
+          "type": "string"
+        },
+        "start": {
+          "minimum": 1,
+          "title": "Start",
+          "type": "integer"
+        }
+      },
+      "required": [
+        "file",
+        "start",
+        "end",
+        "sha256"
+      ],
+      "title": "Span",
+      "type": "object"
+    }
+  },
+  "additionalProperties": false,
+  "properties": {
+    "check_contract": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Check Contract"
+    },
+    "check_sha256": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Check Sha256"
+    },
+    "expr": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Expr"
+    },
+    "foundry_test": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Foundry Test"
+    },
+    "id": {
+      "title": "Id",
+      "type": "string"
+    },
+    "intent_spans": {
+      "items": {
+        "$ref": "#/$defs/Span"
+      },
+      "title": "Intent Spans",
+      "type": "array"
+    },
+    "kind": {
+      "title": "Kind",
+      "type": "string"
+    },
+    "origin": {
+      "title": "Origin",
+      "type": "string"
+    },
+    "statement": {
+      "title": "Statement",
+      "type": "string"
+    },
+    "status": {
+      "default": "candidate",
+      "title": "Status",
+      "type": "string"
+    },
+    "vars": {
+      "items": {
+        "type": "string"
+      },
+      "title": "Vars",
+      "type": "array"
+    },
+    "z3_model": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Z3 Model"
+    }
+  },
+  "required": [
+    "id",
+    "statement",
+    "kind",
+    "origin"
+  ],
+  "title": "Invariant",
+  "type": "object"
+}

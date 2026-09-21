@@ -1,0 +1,49 @@
+{
+  "additionalProperties": false,
+  "properties": {
+    "id": {
+      "title": "Id",
+      "type": "string"
+    },
+    "max_usd": {
+      "title": "Max Usd",
+      "type": "number"
+    },
+    "released_usd": {
+      "default": 0.0,
+      "title": "Released Usd",
+      "type": "number"
+    },
+    "reserved_usd": {
+      "title": "Reserved Usd",
+      "type": "number"
+    },
+    "settled_usd": {
+      "default": 0.0,
+      "title": "Settled Usd",
+      "type": "number"
+    },
+    "status": {
+      "default": "reserved",
+      "enum": [
+        "reserved",
+        "settled",
+        "released"
+      ],
+      "title": "Status",
+      "type": "string"
+    },
+    "task_id": {
+      "title": "Task Id",
+      "type": "string"
+    }
+  },
+  "required": [
+    "id",
+    "task_id",
+    "max_usd",
+    "reserved_usd"
+  ],
+  "title": "BudgetReservation",
+  "type": "object"
+}

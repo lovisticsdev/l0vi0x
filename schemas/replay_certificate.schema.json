@@ -1,0 +1,68 @@
+{
+  "additionalProperties": false,
+  "properties": {
+    "control_sha256": {
+      "title": "Control Sha256",
+      "type": "string"
+    },
+    "cross_check_sha256": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Cross Check Sha256"
+    },
+    "env_hash": {
+      "title": "Env Hash",
+      "type": "string"
+    },
+    "id": {
+      "title": "Id",
+      "type": "string"
+    },
+    "issued_at": {
+      "format": "date-time",
+      "title": "Issued At",
+      "type": "string"
+    },
+    "mac": {
+      "title": "Mac",
+      "type": "string"
+    },
+    "observed_records_sha256": {
+      "title": "Observed Records Sha256",
+      "type": "string"
+    },
+    "runs": {
+      "minimum": 3,
+      "title": "Runs",
+      "type": "integer"
+    },
+    "trace_policy_sha256": {
+      "title": "Trace Policy Sha256",
+      "type": "string"
+    },
+    "witness_sha256": {
+      "title": "Witness Sha256",
+      "type": "string"
+    }
+  },
+  "required": [
+    "id",
+    "witness_sha256",
+    "env_hash",
+    "runs",
+    "observed_records_sha256",
+    "trace_policy_sha256",
+    "control_sha256",
+    "mac",
+    "issued_at"
+  ],
+  "title": "ReplayCertificate",
+  "type": "object"
+}

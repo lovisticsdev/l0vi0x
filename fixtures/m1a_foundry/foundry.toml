@@ -1,0 +1,15 @@
+[profile.default]
+src = "src"
+test = "test"
+out = "out"
+libs = []
+solc_version = "0.8.24"
+evm_version = "cancun"
+optimizer = true
+optimizer_runs = 200
+ffi = false
+fs_permissions = []
+
+[profile.default.fuzz]
+runs = 32
+seed = "0x0000000000000000000000000000000000000000000000000000000000000001"

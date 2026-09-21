@@ -1,0 +1,97 @@
+{
+  "$defs": {
+    "Span": {
+      "additionalProperties": false,
+      "properties": {
+        "end": {
+          "minimum": 1,
+          "title": "End",
+          "type": "integer"
+        },
+        "file": {
+          "title": "File",
+          "type": "string"
+        },
+        "sha256": {
+          "title": "Sha256",
+          "type": "string"
+        },
+        "start": {
+          "minimum": 1,
+          "title": "Start",
+          "type": "integer"
+        }
+      },
+      "required": [
+        "file",
+        "start",
+        "end",
+        "sha256"
+      ],
+      "title": "Span",
+      "type": "object"
+    }
+  },
+  "additionalProperties": false,
+  "properties": {
+    "blocker": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/Span"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null
+    },
+    "blocker_condition": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Blocker Condition"
+    },
+    "conditions": {
+      "additionalProperties": true,
+      "title": "Conditions",
+      "type": "object"
+    },
+    "experiment_id": {
+      "title": "Experiment Id",
+      "type": "string"
+    },
+    "hypothesis_id": {
+      "title": "Hypothesis Id",
+      "type": "string"
+    },
+    "id": {
+      "title": "Id",
+      "type": "string"
+    },
+    "kind": {
+      "title": "Kind",
+      "type": "string"
+    },
+    "near_miss": {
+      "default": 0.0,
+      "maximum": 1,
+      "minimum": 0,
+      "title": "Near Miss",
+      "type": "number"
+    }
+  },
+  "required": [
+    "id",
+    "hypothesis_id",
+    "experiment_id",
+    "kind"
+  ],
+  "title": "FailureRecord",
+  "type": "object"
+}

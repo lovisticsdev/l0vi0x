@@ -1,0 +1,249 @@
+{
+  "$defs": {
+    "DisputeRecord": {
+      "additionalProperties": false,
+      "properties": {
+        "claimant": {
+          "title": "Claimant",
+          "type": "string"
+        },
+        "created_at": {
+          "format": "date-time",
+          "title": "Created At",
+          "type": "string"
+        },
+        "defects": {
+          "items": {
+            "additionalProperties": true,
+            "type": "object"
+          },
+          "title": "Defects",
+          "type": "array"
+        },
+        "evidence": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Evidence",
+          "type": "array"
+        },
+        "id": {
+          "title": "Id",
+          "type": "string"
+        },
+        "issue_code": {
+          "title": "Issue Code",
+          "type": "string"
+        },
+        "override_reason": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Override Reason"
+        },
+        "reviewer": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Reviewer"
+        },
+        "subject_id": {
+          "title": "Subject Id",
+          "type": "string"
+        },
+        "verdict": {
+          "enum": [
+            "supported",
+            "refuted",
+            "inconclusive",
+            "overridden"
+          ],
+          "title": "Verdict",
+          "type": "string"
+        }
+      },
+      "required": [
+        "id",
+        "issue_code",
+        "subject_id",
+        "claimant",
+        "verdict",
+        "created_at"
+      ],
+      "title": "DisputeRecord",
+      "type": "object"
+    }
+  },
+  "additionalProperties": false,
+  "properties": {
+    "certificate_id": {
+      "title": "Certificate Id",
+      "type": "string"
+    },
+    "dispute": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/DisputeRecord"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null
+    },
+    "disputed": {
+      "default": false,
+      "title": "Disputed",
+      "type": "boolean"
+    },
+    "economics_path": {
+      "title": "Economics Path",
+      "type": "string"
+    },
+    "human_review": {
+      "default": "pending",
+      "title": "Human Review",
+      "type": "string"
+    },
+    "hypothesis_id": {
+      "title": "Hypothesis Id",
+      "type": "string"
+    },
+    "id": {
+      "title": "Id",
+      "type": "string"
+    },
+    "impact_labels": {
+      "additionalProperties": {
+        "type": "string"
+      },
+      "title": "Impact Labels",
+      "type": "object"
+    },
+    "ladder": {
+      "additionalProperties": {
+        "anyOf": [
+          {
+            "type": "integer"
+          },
+          {
+            "type": "string"
+          }
+        ]
+      },
+      "title": "Ladder",
+      "type": "object"
+    },
+    "platform_ref": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Platform Ref"
+    },
+    "provenance_label": {
+      "title": "Provenance Label",
+      "type": "string"
+    },
+    "severity": {
+      "additionalProperties": true,
+      "title": "Severity",
+      "type": "object"
+    },
+    "skeptic_defects": {
+      "items": {
+        "additionalProperties": true,
+        "type": "object"
+      },
+      "title": "Skeptic Defects",
+      "type": "array"
+    },
+    "skeptic_disposition": {
+      "default": "none",
+      "enum": [
+        "none",
+        "supported",
+        "refuted_mechanical",
+        "refuted_judgment",
+        "inconclusive"
+      ],
+      "title": "Skeptic Disposition",
+      "type": "string"
+    },
+    "skeptic_families_excluded": {
+      "items": {
+        "type": "string"
+      },
+      "title": "Skeptic Families Excluded",
+      "type": "array"
+    },
+    "skeptic_second_opinion": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Skeptic Second Opinion"
+    },
+    "submitted_at": {
+      "anyOf": [
+        {
+          "format": "date-time",
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Submitted At"
+    },
+    "witness_class": {
+      "enum": [
+        "deployed_fork",
+        "local_deployment"
+      ],
+      "title": "Witness Class",
+      "type": "string"
+    },
+    "witness_path": {
+      "title": "Witness Path",
+      "type": "string"
+    }
+  },
+  "required": [
+    "id",
+    "hypothesis_id",
+    "witness_class",
+    "certificate_id",
+    "ladder",
+    "witness_path",
+    "economics_path",
+    "impact_labels",
+    "severity",
+    "provenance_label"
+  ],
+  "title": "Finding",
+  "type": "object"
+}

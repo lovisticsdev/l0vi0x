@@ -1,0 +1,42 @@
+services:
+  rpc_gate:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile.gate
+    networks: [gate_net, sandbox_net]
+    environment:
+      GATE_AGENT_TOKEN: ${GATE_AGENT_TOKEN:?required}
+      GATE_UPSTREAM_TOKEN: ${GATE_UPSTREAM_TOKEN:?required}
+      ANVIL_RPC_URL: http://127.0.0.1:8546
+      UPSTREAM_RPC_URL: ${UPSTREAM_RPC_URL:?required}
+      AUDIT_ID: ${AUDIT_ID:?required}
+      START_ANVIL: ${START_ANVIL:-0}
+      ANVIL_BIN: ${ANVIL_BIN:-anvil}
+      ANVIL_PORT: 8546
+      RPC_GATE_LOG: /tmp/rpc-gate.jsonl
+      ANVIL_CHAIN_ID: ${ANVIL_CHAIN_ID:-31337}
+    read_only: true
+    security_opt: [no-new-privileges:true]
+    cap_drop: [ALL]
+    tmpfs: [/tmp]
+  sandbox:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile.sandbox
+    networks: [sandbox_net]
+    environment:
+      HOME: /home/agent
+      GATE_URL: http://rpc_gate:8545/agent
+      FOUNDRY_FUZZ_RUNS: "256"
+      FOUNDRY_FUZZ_SEED: "0x0000000000000000000000000000000000000000000000000000000000000001"
+    read_only: true
+    security_opt: [no-new-privileges:true]
+    cap_drop: [ALL]
+    tmpfs: [/tmp]
+    volumes:
+      - ${SANDBOX_TASK_DIR:?required}:/workspace/task:rw
+
+networks:
+  gate_net:
+  sandbox_net:
+    internal: true

@@ -1,0 +1,450 @@
+{
+  "$defs": {
+    "Capability": {
+      "enum": [
+        "permissionless",
+        "flash_loan",
+        "donation",
+        "reentrancy_hook",
+        "malicious_token_or_receiver",
+        "oracle_manipulation",
+        "ordering_mev",
+        "cross_protocol_call"
+      ],
+      "title": "Capability",
+      "type": "string"
+    },
+    "DisputeRecord": {
+      "additionalProperties": false,
+      "properties": {
+        "claimant": {
+          "title": "Claimant",
+          "type": "string"
+        },
+        "created_at": {
+          "format": "date-time",
+          "title": "Created At",
+          "type": "string"
+        },
+        "defects": {
+          "items": {
+            "additionalProperties": true,
+            "type": "object"
+          },
+          "title": "Defects",
+          "type": "array"
+        },
+        "evidence": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Evidence",
+          "type": "array"
+        },
+        "id": {
+          "title": "Id",
+          "type": "string"
+        },
+        "issue_code": {
+          "title": "Issue Code",
+          "type": "string"
+        },
+        "override_reason": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Override Reason"
+        },
+        "reviewer": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Reviewer"
+        },
+        "subject_id": {
+          "title": "Subject Id",
+          "type": "string"
+        },
+        "verdict": {
+          "enum": [
+            "supported",
+            "refuted",
+            "inconclusive",
+            "overridden"
+          ],
+          "title": "Verdict",
+          "type": "string"
+        }
+      },
+      "required": [
+        "id",
+        "issue_code",
+        "subject_id",
+        "claimant",
+        "verdict",
+        "created_at"
+      ],
+      "title": "DisputeRecord",
+      "type": "object"
+    },
+    "HState": {
+      "enum": [
+        "OPEN",
+        "INVESTIGATING",
+        "CONFIRMED",
+        "FINDING",
+        "CLOSED",
+        "CLOSED_DUPLICATE",
+        "PARKED",
+        "MERGED"
+      ],
+      "title": "HState",
+      "type": "string"
+    },
+    "Span": {
+      "additionalProperties": false,
+      "properties": {
+        "end": {
+          "minimum": 1,
+          "title": "End",
+          "type": "integer"
+        },
+        "file": {
+          "title": "File",
+          "type": "string"
+        },
+        "sha256": {
+          "title": "Sha256",
+          "type": "string"
+        },
+        "start": {
+          "minimum": 1,
+          "title": "Start",
+          "type": "integer"
+        }
+      },
+      "required": [
+        "file",
+        "start",
+        "end",
+        "sha256"
+      ],
+      "title": "Span",
+      "type": "object"
+    }
+  },
+  "additionalProperties": false,
+  "properties": {
+    "assumptions": {
+      "items": {
+        "type": "string"
+      },
+      "title": "Assumptions",
+      "type": "array"
+    },
+    "attack_sketch": {
+      "items": {
+        "type": "string"
+      },
+      "title": "Attack Sketch",
+      "type": "array"
+    },
+    "canonical_key": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Canonical Key"
+    },
+    "capabilities": {
+      "items": {
+        "$ref": "#/$defs/Capability"
+      },
+      "title": "Capabilities",
+      "type": "array"
+    },
+    "channel": {
+      "enum": [
+        "lens",
+        "obligation",
+        "seed_static",
+        "seed_shadow",
+        "chain"
+      ],
+      "title": "Channel",
+      "type": "string"
+    },
+    "claim": {
+      "title": "Claim",
+      "type": "string"
+    },
+    "close_reason": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Close Reason"
+    },
+    "composition_rationale": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Composition Rationale"
+    },
+    "created_at": {
+      "format": "date-time",
+      "title": "Created At",
+      "type": "string"
+    },
+    "dispute": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/DisputeRecord"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null
+    },
+    "disputed": {
+      "default": false,
+      "title": "Disputed",
+      "type": "boolean"
+    },
+    "duplicate_of": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Duplicate Of"
+    },
+    "est_cost": {
+      "title": "Est Cost",
+      "type": "string"
+    },
+    "est_impact": {
+      "title": "Est Impact",
+      "type": "string"
+    },
+    "id": {
+      "title": "Id",
+      "type": "string"
+    },
+    "invariant_id": {
+      "title": "Invariant Id",
+      "type": "string"
+    },
+    "ladder": {
+      "additionalProperties": {
+        "anyOf": [
+          {
+            "type": "integer"
+          },
+          {
+            "type": "string"
+          }
+        ]
+      },
+      "title": "Ladder",
+      "type": "object"
+    },
+    "lens": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Lens"
+    },
+    "mechanism_tag": {
+      "title": "Mechanism Tag",
+      "type": "string"
+    },
+    "merged_into": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Merged Into"
+    },
+    "parent_hypotheses": {
+      "items": {
+        "type": "string"
+      },
+      "title": "Parent Hypotheses",
+      "type": "array"
+    },
+    "parked_unblock": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Parked Unblock"
+    },
+    "preconditions": {
+      "items": {
+        "type": "string"
+      },
+      "title": "Preconditions",
+      "type": "array"
+    },
+    "prior_p": {
+      "maximum": 1,
+      "minimum": 0,
+      "title": "Prior P",
+      "type": "number"
+    },
+    "protocol_type": {
+      "title": "Protocol Type",
+      "type": "string"
+    },
+    "provenance": {
+      "additionalProperties": true,
+      "title": "Provenance",
+      "type": "object"
+    },
+    "reopen_count": {
+      "default": 0,
+      "minimum": 0,
+      "title": "Reopen Count",
+      "type": "integer"
+    },
+    "second_opinion_defects": {
+      "items": {
+        "additionalProperties": true,
+        "type": "object"
+      },
+      "title": "Second Opinion Defects",
+      "type": "array"
+    },
+    "second_opinion_disposition": {
+      "default": "none",
+      "enum": [
+        "none",
+        "supported",
+        "refuted_mechanical",
+        "refuted_judgment",
+        "inconclusive"
+      ],
+      "title": "Second Opinion Disposition",
+      "type": "string"
+    },
+    "skeptic_defects": {
+      "items": {
+        "additionalProperties": true,
+        "type": "object"
+      },
+      "title": "Skeptic Defects",
+      "type": "array"
+    },
+    "skeptic_disposition": {
+      "default": "none",
+      "enum": [
+        "none",
+        "supported",
+        "refuted_mechanical",
+        "refuted_judgment",
+        "inconclusive"
+      ],
+      "title": "Skeptic Disposition",
+      "type": "string"
+    },
+    "state": {
+      "$ref": "#/$defs/HState",
+      "default": "OPEN"
+    },
+    "target": {
+      "$ref": "#/$defs/Span"
+    },
+    "updated_at": {
+      "format": "date-time",
+      "title": "Updated At",
+      "type": "string"
+    },
+    "witness_feasibility": {
+      "anyOf": [
+        {
+          "enum": [
+            "deployed_fork",
+            "local_deployment"
+          ],
+          "type": "string"
+        },
+        {
+          "enum": [
+            "unsupported",
+            "undetermined"
+          ],
+          "type": "string"
+        }
+      ],
+      "default": "undetermined",
+      "title": "Witness Feasibility"
+    }
+  },
+  "required": [
+    "id",
+    "claim",
+    "target",
+    "invariant_id",
+    "capabilities",
+    "channel",
+    "protocol_type",
+    "mechanism_tag",
+    "prior_p",
+    "est_impact",
+    "est_cost",
+    "created_at",
+    "updated_at"
+  ],
+  "title": "Hypothesis",
+  "type": "object"
+}

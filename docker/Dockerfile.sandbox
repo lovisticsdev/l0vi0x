@@ -1,0 +1,11 @@
+FROM python:3.12-slim
+ARG FOUNDRY_VERSION
+RUN useradd --create-home --uid 10001 agent
+WORKDIR /workspace/task
+COPY --chown=agent:agent . /opt/l0vi0x
+# Tool binaries are supplied by the audited build environment / pinned image build.
+# No API, RPC, certificate, or signing key is copied into the image.
+USER agent
+ENV HOME=/home/agent PYTHONUNBUFFERED=1
+ENTRYPOINT []
+CMD ["python3", "-m", "l0vi0x.tools.sandbox_entrypoint"]

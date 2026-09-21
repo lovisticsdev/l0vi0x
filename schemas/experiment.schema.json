@@ -1,0 +1,80 @@
+{
+  "additionalProperties": false,
+  "properties": {
+    "artifacts": {
+      "items": {
+        "type": "string"
+      },
+      "title": "Artifacts",
+      "type": "array"
+    },
+    "attempt": {
+      "default": 1,
+      "minimum": 1,
+      "title": "Attempt",
+      "type": "integer"
+    },
+    "cmd": {
+      "items": {
+        "type": "string"
+      },
+      "title": "Cmd",
+      "type": "array"
+    },
+    "cost": {
+      "additionalProperties": true,
+      "title": "Cost",
+      "type": "object"
+    },
+    "env": {
+      "additionalProperties": true,
+      "title": "Env",
+      "type": "object"
+    },
+    "failure_kind": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Failure Kind"
+    },
+    "hypothesis_id": {
+      "title": "Hypothesis Id",
+      "type": "string"
+    },
+    "id": {
+      "title": "Id",
+      "type": "string"
+    },
+    "kind": {
+      "title": "Kind",
+      "type": "string"
+    },
+    "result": {
+      "title": "Result",
+      "type": "string"
+    },
+    "task_id": {
+      "title": "Task Id",
+      "type": "string"
+    }
+  },
+  "required": [
+    "id",
+    "hypothesis_id",
+    "task_id",
+    "kind",
+    "env",
+    "cmd",
+    "result",
+    "artifacts",
+    "cost"
+  ],
+  "title": "Experiment",
+  "type": "object"
+}

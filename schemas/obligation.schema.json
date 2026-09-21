@@ -1,0 +1,64 @@
+{
+  "additionalProperties": false,
+  "properties": {
+    "attempts": {
+      "default": 0,
+      "minimum": 0,
+      "title": "Attempts",
+      "type": "integer"
+    },
+    "depth": {
+      "default": 0,
+      "minimum": 0,
+      "title": "Depth",
+      "type": "integer"
+    },
+    "key": {
+      "title": "Key",
+      "type": "string"
+    },
+    "reason": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Reason"
+    },
+    "ref": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Ref"
+    },
+    "status": {
+      "default": "open",
+      "enum": [
+        "open",
+        "verified_bounded",
+        "verified_proved",
+        "refuted_with_witness",
+        "blocked_with_reason",
+        "out_of_budget_attempted",
+        "never_attempted"
+      ],
+      "title": "Status",
+      "type": "string"
+    }
+  },
+  "required": [
+    "key"
+  ],
+  "title": "ObligationCell",
+  "type": "object"
+}

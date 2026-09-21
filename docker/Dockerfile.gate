@@ -1,0 +1,8 @@
+FROM python:3.12-slim
+RUN useradd --create-home --uid 10001 gate
+WORKDIR /app
+COPY docker/rpc_gate.py /app/rpc_gate.py
+COPY config/policy/rpc_allowlist.yaml /app/config/policy/rpc_allowlist.yaml
+USER gate
+EXPOSE 8545
+ENTRYPOINT ["python3", "/app/rpc_gate.py"]

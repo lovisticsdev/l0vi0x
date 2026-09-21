@@ -1,0 +1,85 @@
+{
+  "additionalProperties": false,
+  "properties": {
+    "claimant": {
+      "title": "Claimant",
+      "type": "string"
+    },
+    "created_at": {
+      "format": "date-time",
+      "title": "Created At",
+      "type": "string"
+    },
+    "defects": {
+      "items": {
+        "additionalProperties": true,
+        "type": "object"
+      },
+      "title": "Defects",
+      "type": "array"
+    },
+    "evidence": {
+      "items": {
+        "type": "string"
+      },
+      "title": "Evidence",
+      "type": "array"
+    },
+    "id": {
+      "title": "Id",
+      "type": "string"
+    },
+    "issue_code": {
+      "title": "Issue Code",
+      "type": "string"
+    },
+    "override_reason": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Override Reason"
+    },
+    "reviewer": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Reviewer"
+    },
+    "subject_id": {
+      "title": "Subject Id",
+      "type": "string"
+    },
+    "verdict": {
+      "enum": [
+        "supported",
+        "refuted",
+        "inconclusive",
+        "overridden"
+      ],
+      "title": "Verdict",
+      "type": "string"
+    }
+  },
+  "required": [
+    "id",
+    "issue_code",
+    "subject_id",
+    "claimant",
+    "verdict",
+    "created_at"
+  ],
+  "title": "DisputeRecord",
+  "type": "object"
+}

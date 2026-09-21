@@ -1,0 +1,110 @@
+{
+  "additionalProperties": false,
+  "properties": {
+    "budget": {
+      "additionalProperties": true,
+      "title": "Budget",
+      "type": "object"
+    },
+    "cell_key": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Cell Key"
+    },
+    "channel": {
+      "anyOf": [
+        {
+          "enum": [
+            "lens",
+            "obligation",
+            "seed_static",
+            "seed_shadow",
+            "chain"
+          ],
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Channel"
+    },
+    "exclude_families": {
+      "items": {
+        "type": "string"
+      },
+      "title": "Exclude Families",
+      "type": "array"
+    },
+    "id": {
+      "title": "Id",
+      "type": "string"
+    },
+    "idempotency_key": {
+      "title": "Idempotency Key",
+      "type": "string"
+    },
+    "inputs": {
+      "additionalProperties": {
+        "type": "string"
+      },
+      "title": "Inputs",
+      "type": "object"
+    },
+    "isolation": {
+      "default": "standard",
+      "title": "Isolation",
+      "type": "string"
+    },
+    "lens": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Lens"
+    },
+    "output_model": {
+      "title": "Output Model",
+      "type": "string"
+    },
+    "protocol_type": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Protocol Type"
+    },
+    "role": {
+      "title": "Role",
+      "type": "string"
+    }
+  },
+  "required": [
+    "id",
+    "idempotency_key",
+    "role",
+    "inputs",
+    "output_model",
+    "budget"
+  ],
+  "title": "Task",
+  "type": "object"
+}

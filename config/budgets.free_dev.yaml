@@ -1,0 +1,5 @@
+# config/budgets.free_dev.yaml: SHADOW dollars (billing: shadow, section 5.1a). Real cost is $0.
+per_audit: {usd: 2.00, wall_hours: 24, tokens_in_target: 3_000_000, tokens_out_target: 400_000}
+per_hypothesis: {max_experiments: 3, max_usd: 0.20}
+per_hypothesis_chain: {max_experiments: 5, max_usd: 0.50}
+# phase_share, ring_fenced, role_caps, chain, inner_loop, per_worker, replan_checkpoints: inherited unchanged

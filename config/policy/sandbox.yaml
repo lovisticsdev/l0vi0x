@@ -1,0 +1,13 @@
+version: 1
+network:
+  sandbox_egress: [rpc_gate:8545]
+  deny_all_else: true
+fs:
+  write_roots: [audits/<target>/experiments, audits/<target>/findings, audits/<target>/out, audits/<target>/cache, audits/<target>/replays]
+  read_roots: [audits/<target>/src, knowledge, harness]
+  no_symlink_escape: true
+env:
+  allowlist: [PATH, HOME, FOUNDRY_PROFILE, FOUNDRY_FUZZ_RUNS, FOUNDRY_FUZZ_SEED, FOUNDRY_VERBOSITY, SOLC_VERSION, GATE_URL]
+  secrets: none
+limits: {cpu: 4, mem_gb: 8, tool_timeout_s: 900, processes: 64}
+zones: {llm_client: host, rpc_keys: gate_only, replay_key: host_only}

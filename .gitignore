@@ -5,6 +5,7 @@ eval/private/
 # Local runtime secrets and generated data
 .env
 .env.*
+!.env.example
 *.db
 *.sqlite*
 keys/
@@ -24,5 +25,6 @@ venv/
 .DS_Store
 Thumbs.db
 
-# The plan
-l0vi0x_build_plan.md
+# Build plans
+l0vi0x_build_plan*.md
+M0_IMPLEMENTATION_NOTES.md

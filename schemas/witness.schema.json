@@ -1,0 +1,276 @@
+{
+  "$defs": {
+    "WitnessAssertion": {
+      "additionalProperties": false,
+      "properties": {
+        "actor": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Actor"
+        },
+        "expected": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "integer"
+            },
+            {
+              "type": "boolean"
+            }
+          ],
+          "title": "Expected"
+        },
+        "id": {
+          "title": "Id",
+          "type": "string"
+        },
+        "kind": {
+          "enum": [
+            "invariant",
+            "balance_delta",
+            "solvency",
+            "state_change",
+            "custom"
+          ],
+          "title": "Kind",
+          "type": "string"
+        },
+        "observed_record": {
+          "title": "Observed Record",
+          "type": "string"
+        },
+        "operator": {
+          "enum": [
+            "eq",
+            "neq",
+            "gt",
+            "gte",
+            "lt",
+            "lte",
+            "holds",
+            "violated"
+          ],
+          "title": "Operator",
+          "type": "string"
+        },
+        "required": {
+          "default": true,
+          "title": "Required",
+          "type": "boolean"
+        },
+        "target": {
+          "title": "Target",
+          "type": "string"
+        },
+        "token": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Token"
+        }
+      },
+      "required": [
+        "id",
+        "kind",
+        "target",
+        "operator",
+        "expected",
+        "observed_record"
+      ],
+      "title": "WitnessAssertion",
+      "type": "object"
+    }
+  },
+  "additionalProperties": false,
+  "properties": {
+    "assertions": {
+      "items": {
+        "$ref": "#/$defs/WitnessAssertion"
+      },
+      "title": "Assertions",
+      "type": "array"
+    },
+    "attack_body_sha256": {
+      "title": "Attack Body Sha256",
+      "type": "string"
+    },
+    "chain_id": {
+      "title": "Chain Id",
+      "type": "integer"
+    },
+    "commit": {
+      "title": "Commit",
+      "type": "string"
+    },
+    "compiler": {
+      "additionalProperties": true,
+      "title": "Compiler",
+      "type": "object"
+    },
+    "control_test_name": {
+      "title": "Control Test Name",
+      "type": "string"
+    },
+    "cross_check_provider_label": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Cross Check Provider Label"
+    },
+    "declared_actors": {
+      "items": {
+        "type": "string"
+      },
+      "title": "Declared Actors",
+      "type": "array"
+    },
+    "declared_tokens": {
+      "items": {
+        "type": "string"
+      },
+      "title": "Declared Tokens",
+      "type": "array"
+    },
+    "env_hash": {
+      "title": "Env Hash",
+      "type": "string"
+    },
+    "expected_wrapper_depth": {
+      "title": "Expected Wrapper Depth",
+      "type": "integer"
+    },
+    "fork_block": {
+      "anyOf": [
+        {
+          "type": "integer"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Fork Block"
+    },
+    "harness_address": {
+      "title": "Harness Address",
+      "type": "string"
+    },
+    "harness_create2_salt": {
+      "title": "Harness Create2 Salt",
+      "type": "string"
+    },
+    "initial_capital_wei": {
+      "default": 0,
+      "title": "Initial Capital Wei",
+      "type": "integer"
+    },
+    "invariant_check_pins": {
+      "additionalProperties": {
+        "type": "string"
+      },
+      "title": "Invariant Check Pins",
+      "type": "object"
+    },
+    "max_block_advance": {
+      "default": 0,
+      "title": "Max Block Advance",
+      "type": "integer"
+    },
+    "max_time_advance_s": {
+      "default": 0,
+      "title": "Max Time Advance S",
+      "type": "integer"
+    },
+    "rpc_provider_label": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Rpc Provider Label"
+    },
+    "setup_budget": {
+      "anyOf": [
+        {
+          "additionalProperties": true,
+          "type": "object"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Setup Budget"
+    },
+    "template_sha256": {
+      "title": "Template Sha256",
+      "type": "string"
+    },
+    "test_file": {
+      "title": "Test File",
+      "type": "string"
+    },
+    "test_name": {
+      "title": "Test Name",
+      "type": "string"
+    },
+    "witness_class": {
+      "enum": [
+        "deployed_fork",
+        "local_deployment"
+      ],
+      "title": "Witness Class",
+      "type": "string"
+    },
+    "wrapper_callsite_sha256": {
+      "title": "Wrapper Callsite Sha256",
+      "type": "string"
+    }
+  },
+  "required": [
+    "witness_class",
+    "chain_id",
+    "commit",
+    "compiler",
+    "test_file",
+    "test_name",
+    "control_test_name",
+    "declared_actors",
+    "declared_tokens",
+    "assertions",
+    "template_sha256",
+    "attack_body_sha256",
+    "harness_address",
+    "harness_create2_salt",
+    "expected_wrapper_depth",
+    "wrapper_callsite_sha256",
+    "env_hash"
+  ],
+  "title": "Witness",
+  "type": "object"
+}

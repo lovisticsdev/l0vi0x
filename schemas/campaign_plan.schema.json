@@ -1,0 +1,49 @@
+{
+  "additionalProperties": false,
+  "properties": {
+    "campaign_id": {
+      "title": "Campaign Id",
+      "type": "string"
+    },
+    "candidate_hypotheses": {
+      "items": {
+        "type": "string"
+      },
+      "title": "Candidate Hypotheses",
+      "type": "array"
+    },
+    "created_at": {
+      "format": "date-time",
+      "title": "Created At",
+      "type": "string"
+    },
+    "id": {
+      "title": "Id",
+      "type": "string"
+    },
+    "phase": {
+      "title": "Phase",
+      "type": "string"
+    },
+    "rationale": {
+      "title": "Rationale",
+      "type": "string"
+    },
+    "task_ids": {
+      "items": {
+        "type": "string"
+      },
+      "title": "Task Ids",
+      "type": "array"
+    }
+  },
+  "required": [
+    "id",
+    "campaign_id",
+    "phase",
+    "rationale",
+    "created_at"
+  ],
+  "title": "CampaignPlan",
+  "type": "object"
+}

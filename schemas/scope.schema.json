@@ -1,0 +1,233 @@
+{
+  "$defs": {
+    "DependencyRef": {
+      "additionalProperties": false,
+      "properties": {
+        "address": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Address"
+        },
+        "id": {
+          "title": "Id",
+          "type": "string"
+        },
+        "kind": {
+          "title": "Kind",
+          "type": "string"
+        },
+        "name": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Name"
+        },
+        "reason": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Reason"
+        }
+      },
+      "required": [
+        "id",
+        "kind"
+      ],
+      "title": "DependencyRef",
+      "type": "object"
+    },
+    "ScopeTarget": {
+      "additionalProperties": false,
+      "properties": {
+        "address": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Address"
+        },
+        "contract": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Contract"
+        },
+        "id": {
+          "title": "Id",
+          "type": "string"
+        },
+        "kind": {
+          "title": "Kind",
+          "type": "string"
+        },
+        "path": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Path"
+        },
+        "rationale": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Rationale"
+        }
+      },
+      "required": [
+        "id",
+        "kind"
+      ],
+      "title": "ScopeTarget",
+      "type": "object"
+    }
+  },
+  "additionalProperties": false,
+  "properties": {
+    "attacker_capital_wei": {
+      "title": "Attacker Capital Wei",
+      "type": "integer"
+    },
+    "commit": {
+      "title": "Commit",
+      "type": "string"
+    },
+    "concurrent_programs": {
+      "items": {
+        "$ref": "#/$defs/DependencyRef"
+      },
+      "title": "Concurrent Programs",
+      "type": "array"
+    },
+    "confidentiality": {
+      "default": "private",
+      "enum": [
+        "public",
+        "private"
+      ],
+      "title": "Confidentiality",
+      "type": "string"
+    },
+    "dependencies": {
+      "items": {
+        "$ref": "#/$defs/DependencyRef"
+      },
+      "title": "Dependencies",
+      "type": "array"
+    },
+    "deployed": {
+      "title": "Deployed",
+      "type": "boolean"
+    },
+    "excluded_classes": {
+      "items": {
+        "type": "string"
+      },
+      "title": "Excluded Classes",
+      "type": "array"
+    },
+    "in_scope": {
+      "items": {
+        "$ref": "#/$defs/ScopeTarget"
+      },
+      "title": "In Scope",
+      "type": "array"
+    },
+    "out_of_scope": {
+      "items": {
+        "type": "string"
+      },
+      "title": "Out Of Scope",
+      "type": "array"
+    },
+    "platform": {
+      "title": "Platform",
+      "type": "string"
+    },
+    "poc_required": {
+      "title": "Poc Required",
+      "type": "boolean"
+    },
+    "prior_commit": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Prior Commit"
+    },
+    "program_ref": {
+      "title": "Program Ref",
+      "type": "string"
+    },
+    "severity_model_ref": {
+      "title": "Severity Model Ref",
+      "type": "string"
+    },
+    "version": {
+      "minimum": 1,
+      "title": "Version",
+      "type": "integer"
+    }
+  },
+  "required": [
+    "version",
+    "platform",
+    "program_ref",
+    "commit",
+    "in_scope",
+    "out_of_scope",
+    "excluded_classes",
+    "deployed",
+    "attacker_capital_wei",
+    "poc_required",
+    "severity_model_ref"
+  ],
+  "title": "Scope",
+  "type": "object"
+}

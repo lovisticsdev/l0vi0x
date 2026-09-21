@@ -1,0 +1,22 @@
+# Canonical M0 cheatcode catalog. Anything absent is forbidden by default.
+categories:
+  prank: impersonation
+  startPrank: impersonation
+  stopPrank: impersonation_control
+  deal: state_mint
+  etch: code_mutation
+  store: storage_mutation
+  load: storage_read
+  warp: time_advance
+  roll: block_advance
+  hoax: compound_impersonation
+  startHoax: compound_impersonation
+  expectRevert: assertion
+  expectEmit: assertion
+  label: diagnostics
+  assume: fuzz_assumption
+  bound: fuzz_assumption
+  ffi: external_io
+  readFile: filesystem_io
+  writeFile: filesystem_io
+  setEnv: environment_io

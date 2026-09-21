@@ -1,0 +1,81 @@
+{
+  "additionalProperties": false,
+  "properties": {
+    "id": {
+      "title": "Id",
+      "type": "string"
+    },
+    "queued_at": {
+      "format": "date-time",
+      "title": "Queued At",
+      "type": "string"
+    },
+    "reason_code": {
+      "title": "Reason Code",
+      "type": "string"
+    },
+    "resolution": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Resolution"
+    },
+    "resolved_at": {
+      "anyOf": [
+        {
+          "format": "date-time",
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Resolved At"
+    },
+    "reviewer": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Reviewer"
+    },
+    "status": {
+      "default": "queued",
+      "enum": [
+        "queued",
+        "resolved"
+      ],
+      "title": "Status",
+      "type": "string"
+    },
+    "subject_id": {
+      "title": "Subject Id",
+      "type": "string"
+    },
+    "subject_type": {
+      "title": "Subject Type",
+      "type": "string"
+    }
+  },
+  "required": [
+    "id",
+    "subject_type",
+    "subject_id",
+    "reason_code",
+    "queued_at"
+  ],
+  "title": "HumanReviewItem",
+  "type": "object"
+}
