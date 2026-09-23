@@ -1,0 +1,41 @@
+{
+  "additionalProperties": false,
+  "description": "Which models a stack (unit_fake / free_dev / a prod stack) may select.\n\n`decisions: false` marks a stack whose runs are excluded from\ncalibration, KB promotion, and benchmark claims (build plan, \"Which\nstack each milestone uses\").",
+  "properties": {
+    "allowed_pricing_tiers": {
+      "items": {
+        "enum": [
+          "free",
+          "shadow",
+          "paid"
+        ],
+        "type": "string"
+      },
+      "title": "Allowed Pricing Tiers",
+      "type": "array"
+    },
+    "decisions": {
+      "title": "Decisions",
+      "type": "boolean"
+    },
+    "kind": {
+      "enum": [
+        "dev",
+        "prod"
+      ],
+      "title": "Kind",
+      "type": "string"
+    },
+    "stack": {
+      "title": "Stack",
+      "type": "string"
+    }
+  },
+  "required": [
+    "stack",
+    "kind",
+    "decisions"
+  ],
+  "title": "StackPolicy",
+  "type": "object"
+}

@@ -41,7 +41,25 @@ Untracked files:
         tests/test_m2_schemas.py
 
 no changes added to commit (use "git add" and/or "git commit -a")
-lovisticsdev@Mobilith:~/projects/l0vi0x$ 
+(l0vi0x) lovisticsdev@Mobilith:~/projects/l0vi0x$ uv sync --locked --extra dev
+warning: `VIRTUAL_ENV=/mnt/c/Users/odong/Downloads/ethereum-mastery/l0vi0x/.venv` does not match the project environment path `.venv` and will be ignored; use `--active` to target the active environment instead
+Resolved 26 packages in 5ms
+Checked 25 packages in 1ms
+(l0vi0x) lovisticsdev@Mobilith:~/projects/l0vi0x$ PYTHONPATH=src uv run --locked pytest tests/test_m2_schemas.py tests/test_m2_adapters.py -v
+warning: `VIRTUAL_ENV=/mnt/c/Users/odong/Downloads/ethereum-mastery/l0vi0x/.venv` does not match the project environment path `.venv` and will be ignored; use `--active` to target the active environment instead
+================================================================================================================================================ test session starts =================================================================================================================================================
+platform linux -- Python 3.12.3, pytest-9.1.1, pluggy-1.6.0
+rootdir: /home/lovisticsdev/projects/l0vi0x
+configfile: pyproject.toml
+plugins: hypothesis-6.168.0, asyncio-1.4.0
+asyncio: mode=Mode.STRICT, debug=False, asyncio_default_fixture_loop_scope=None, asyncio_default_test_loop_scope=function
+collected 17 items                                                                                                                                                                                                                                                                                                   
+
+tests/test_m2_schemas.py .....                                                                                                                                                                                                                                                                                 [ 29%]
+tests/test_m2_adapters.py ............                                                                                                                                                                                                                                                                         [100%]
+
+================================================================================================================================================= 17 passed in 5.73s =================================================================================================================================================
+(l0vi0x) lovisticsdev@Mobilith:~/projects/l0vi0x$ 
 
 
 For M2.0 - M2.12 we implement everything upto where a test is needed to proceed. we'll proceed like that until M2.12

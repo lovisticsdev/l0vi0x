@@ -1,0 +1,82 @@
+{
+  "additionalProperties": false,
+  "description": "A model as observed by `doctor`: what it can do right now, not just\nstatic config. One of these, per model, is what native probing writes\ninto `models.lock.yaml` (M2.3).",
+  "properties": {
+    "capabilities": {
+      "additionalProperties": {
+        "type": "boolean"
+      },
+      "title": "Capabilities",
+      "type": "object"
+    },
+    "context_window": {
+      "exclusiveMinimum": 0,
+      "title": "Context Window",
+      "type": "integer"
+    },
+    "deprecated": {
+      "default": false,
+      "title": "Deprecated",
+      "type": "boolean"
+    },
+    "family": {
+      "title": "Family",
+      "type": "string"
+    },
+    "model_id": {
+      "title": "Model Id",
+      "type": "string"
+    },
+    "pricing_observed_at": {
+      "format": "date-time",
+      "title": "Pricing Observed At",
+      "type": "string"
+    },
+    "pricing_tier": {
+      "default": "paid",
+      "enum": [
+        "free",
+        "shadow",
+        "paid"
+      ],
+      "title": "Pricing Tier",
+      "type": "string"
+    },
+    "pricing_version": {
+      "title": "Pricing Version",
+      "type": "string"
+    },
+    "provider": {
+      "title": "Provider",
+      "type": "string"
+    },
+    "roles": {
+      "items": {
+        "type": "string"
+      },
+      "title": "Roles",
+      "type": "array"
+    },
+    "terms_observed_at": {
+      "format": "date-time",
+      "title": "Terms Observed At",
+      "type": "string"
+    },
+    "terms_version": {
+      "title": "Terms Version",
+      "type": "string"
+    }
+  },
+  "required": [
+    "provider",
+    "model_id",
+    "family",
+    "context_window",
+    "terms_version",
+    "terms_observed_at",
+    "pricing_version",
+    "pricing_observed_at"
+  ],
+  "title": "ModelProfile",
+  "type": "object"
+}
