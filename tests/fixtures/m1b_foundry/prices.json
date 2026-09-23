@@ -1,0 +1,18 @@
+{
+  "prices": {
+    "native": {
+      "asset": "native",
+      "usd_per_unit": 2000.0,
+      "decimals": 18,
+      "source": "m1b-static-pinned-fixture",
+      "block": 1,
+      "observed_at": "2026-01-01T00:00:00Z"
+    },
+    "0x0000000000000000000000000000000000000000": {
+      "asset": "0x0000000000000000000000000000000000000000",
+      "usd_per_unit": 1.0,
+      "decimals": 18,
+      "source": "m1b-token-zero-placeholder"
+    }
+  }
+}

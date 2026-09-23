@@ -186,6 +186,7 @@ class Witness(Strict):
     max_block_advance: int = 0
     declared_actors: list[str]
     declared_tokens: list[str]
+    token_decimals: dict[str, int] = Field(default_factory=dict)
     setup_budget: dict[str, Any] | None = None
     assertions: list[WitnessAssertion]
     invariant_check_pins: dict[str, str] = Field(default_factory=dict)
@@ -193,6 +194,15 @@ class Witness(Strict):
     attack_body_sha256: str
     harness_address: str
     harness_create2_salt: str
+    harness_create2_deployer: str | None = None
+    harness_init_code_sha256: str | None = None
+    harness_runtime_sha256: str | None = None
+    harness_source_path: str | None = None
+    harness_source_sha256: str | None = None
+    wrapper_address: str | None = None
+    wrapper_runtime_sha256: str | None = None
+    wrapper_source_path: str | None = None
+    wrapper_source_sha256: str | None = None
     expected_wrapper_depth: int
     wrapper_callsite_sha256: str
     rpc_provider_label: str | None = None

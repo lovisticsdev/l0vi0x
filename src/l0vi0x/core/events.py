@@ -13,6 +13,7 @@ EVENT_KINDS = frozenset({
     "budget_warning", "quota_switch", "model_unavailable", "refusal_logged",
     "skeptic_family_exhausted", "skeptic_unavailable", "skeptic_second_opinion",
     "driver_paused_for_human_review", "driver_resumed", "hyp_updated", "hyp_ladder_award",
+    "entity_saved",
 })
 
 

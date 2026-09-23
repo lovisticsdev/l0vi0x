@@ -103,7 +103,7 @@ def update_lock(config_path: str | Path, lock_path: str | Path) -> dict[str, Any
     return lock
 
 
-def verify_binary_lock(path: str | Path, *, binary_paths: dict[str, str] | None = None, required_names: list[str] | None = None) -> list[str]:
+def verify_binary_lock(path: str | Path, *, binary_paths: dict[str, str] | None = None, required_names: list[str] | None = None, allow_extra: bool = False) -> list[str]:
     lock = read_lock(path) or {}
     problems: list[str] = []
     if lock.get("status") != "verified":
@@ -118,13 +118,20 @@ def verify_binary_lock(path: str | Path, *, binary_paths: dict[str, str] | None 
             required_names = list((config.get("tools") or {}).keys())
     if required_names:
         missing = sorted(set(required_names) - set(locked_tools))
-        extra = sorted(set(locked_tools) - set(required_names))
         if missing:
             problems.append("missing required tools: " + ", ".join(missing))
-        if extra:
-            problems.append("unexpected locked tools: " + ", ".join(extra))
+        if not allow_extra:
+            extra = sorted(set(locked_tools) - set(required_names))
+            if extra:
+                problems.append("unexpected locked tools: " + ", ".join(extra))
     for name, entry in locked_tools.items():
+        if required_names is not None and name not in set(required_names):
+            continue
         binary = (binary_paths or {}).get(name) or entry.get("binary")
+        if binary and not Path(str(binary)).exists():
+            portable = shutil.which(name)
+            if portable:
+                binary = portable
         expected_version = entry.get("version")
         expected_hash = entry.get("sha256")
         if not binary or expected_version in (None, "") or expected_hash in (None, ""):
@@ -142,4 +149,81 @@ def verify_binary_lock(path: str | Path, *, binary_paths: dict[str, str] | None 
             problems.append(f"{name}: probe output mismatch")
         if actual_sha256(binary) != expected_hash:
             problems.append(f"{name}: sha256 mismatch")
+    return problems
+
+
+def verify_container_binary_lock(
+    lock_path: str | Path,
+    *,
+    image: str,
+    required_names: list[str],
+) -> list[str]:
+    lock = read_lock(lock_path) or {}
+    problems: list[str] = []
+
+    if lock.get("status") != "verified":
+        problems.append("lock status is not verified")
+
+    image_ref = (lock.get("image") or {}).get("ref")
+    if image_ref != image:
+        problems.append(f"image ref mismatch: expected {image}, found {image_ref}")
+
+    tools = lock.get("tools") or {}
+    missing = sorted(set(required_names) - set(tools))
+    if missing:
+        problems.append("missing required tools: " + ", ".join(missing))
+
+    for name in required_names:
+        entry = tools.get(name)
+        if entry is None:
+            continue
+
+        expected_version = str(entry.get("version", "")).strip()
+        expected_probe = str(entry.get("probe_output", "")).strip()
+        expected_hash = str(entry.get("sha256", "")).strip()
+
+        probe = (
+            f"docker run --rm --entrypoint sh {image} -lc "
+            f"'for tool in {name}; do echo \"=== $tool ===\"; /usr/local/bin/$tool --version; sha256sum /usr/local/bin/$tool; done'"
+        )
+        proc = subprocess.run(
+            probe,
+            shell=True,
+            capture_output=True,
+            text=True,
+            check=False,
+        )
+        if proc.returncode != 0:
+            problems.append(f"{name}: docker probe failed: {proc.stderr.strip() or proc.stdout.strip()}")
+            continue
+
+        output = (proc.stdout + "\n" + proc.stderr).strip()
+        lines = output.splitlines()
+        marker = f"=== {name} ==="
+        try:
+            start = lines.index(marker) + 1
+        except ValueError:
+            start = 0
+        version_lines: list[str] = []
+        actual_hash = ""
+        target_suffix = f"/usr/local/bin/{name}"
+        for line in lines[start:]:
+            stripped = line.strip()
+            if not stripped:
+                continue
+            parts = stripped.split(None, 1)
+            if len(parts) == 2 and parts[1].strip() == target_suffix:
+                actual_hash = parts[0].strip()
+                break
+            version_lines.append(line)
+        actual_version = "\n".join(version_lines).strip()
+        actual_probe = actual_version
+
+        if expected_version and actual_version and expected_version != actual_version:
+            problems.append(f"{name}: version mismatch")
+        if expected_probe and expected_probe not in output:
+            problems.append(f"{name}: probe output mismatch")
+        if expected_hash and actual_hash and expected_hash != actual_hash:
+            problems.append(f"{name}: sha256 mismatch")
+
     return problems

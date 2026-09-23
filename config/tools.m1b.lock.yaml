@@ -1,0 +1,48 @@
+version: 1
+status: verified
+
+image:
+  ref: ghcr.io/foundry-rs/foundry@sha256:2e4287278639262de76db72477301d5d3212fa1b1cce710d7d148750a46ce9e7
+
+tools:
+  forge:
+    binary: /usr/local/bin/forge
+    version: |
+      forge Version: 1.8.3
+      Commit SHA: cae51ad458f6abb64852b7709eb784352429825d
+      Build Timestamp: 2026-09-15T10:30:32.683787271Z (1789468232)
+      Build Profile: dist
+    probe_output: |
+      forge Version: 1.8.3
+      Commit SHA: cae51ad458f6abb64852b7709eb784352429825d
+      Build Timestamp: 2026-09-15T10:30:32.683787271Z (1789468232)
+      Build Profile: dist
+    sha256: a80861819ec50a19523b44c6e6ff8063898ab5b192a4a26ae0f473ded3779bf7
+
+  anvil:
+    binary: /usr/local/bin/anvil
+    version: |
+      anvil Version: 1.8.3
+      Commit SHA: cae51ad458f6abb64852b7709eb784352429825d
+      Build Timestamp: 2026-09-15T10:30:32.683787271Z (1789468232)
+      Build Profile: dist
+    probe_output: |
+      anvil Version: 1.8.3
+      Commit SHA: cae51ad458f6abb64852b7709eb784352429825d
+      Build Timestamp: 2026-09-15T10:30:32.683787271Z (1789468232)
+      Build Profile: dist
+    sha256: 1e1ed69e807093278f4e97100aa396404af34c7ad5506de5867a903a016dec8d
+
+  cast:
+    binary: /usr/local/bin/cast
+    version: |
+      cast Version: 1.8.3
+      Commit SHA: cae51ad458f6abb64852b7709eb784352429825d
+      Build Timestamp: 2026-09-15T10:30:32.683787271Z (1789468232)
+      Build Profile: dist
+    probe_output: |
+      cast Version: 1.8.3
+      Commit SHA: cae51ad458f6abb64852b7709eb784352429825d
+      Build Timestamp: 2026-09-15T10:30:32.683787271Z (1789468232)
+      Build Profile: dist
+    sha256: ee5fc4501a67cbdbc14900771817b972c42121112786b9b99d83314fca9faf2f

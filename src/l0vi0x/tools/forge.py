@@ -20,8 +20,8 @@ class ForgeReport:
     record_path: str | None = None
 
 
-def build(*, root: str | Path, forge_bin: str = "forge", timeout_s: float = 900, tool_runs_dir: str | Path | None = None) -> ForgeReport:
-    argv = [forge_bin, "build", "--root", str(root), "--color", "never"]
+def build(*, root: str | Path, forge_bin: str = "forge", timeout_s: float = 900, tool_runs_dir: str | Path | None = None, paths: Sequence[str] = ()) -> ForgeReport:
+    argv = [forge_bin, "build", "--root", str(root), "--color", "never", *paths]
     result = run(argv, cwd=root, timeout_s=timeout_s, tool_runs_dir=tool_runs_dir)
     return ForgeReport(argv, result.rc == 0, result.rc, result.stdout, result.stderr, None, record_path=result.record_path)
 

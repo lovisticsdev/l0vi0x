@@ -1,24 +1,14 @@
-"""Observe the replay environment from the *copied tree* instead of echoing the witness.
-
-``Witness.env_hash`` is computed when a witness is declared. At replay time the executor rebuilds the
-same digest from the fresh copy it is about to run:
-
-* the parsed ``foundry.toml`` (compiler settings, security switches, RPC alias table),
-* the template file, the ATTACK BODY region and the WRAPPER CALLSITE region,
-* the harness library files and the deployment-plan sources,
-* the tool versions reported by the binaries themselves.
-
-The coordinator then compares the observed digest with the witness' declaration, so a tampered
-harness library, edited test file, changed compiler pin or different Foundry build changes the digest
-and the replay is refused. Comparing digests across runs alone cannot detect that: three copies that
-are all wrong in the same way still agree with each other.
-"""
+"""Independent replay-environment observation and binding."""
 from __future__ import annotations
 
-from dataclasses import dataclass
+from dataclasses import asdict, dataclass
 import hashlib
+import json
 from pathlib import Path
-import tomllib
+try:
+    import tomllib
+except ModuleNotFoundError:  # Python < 3.11 (e.g. the sandbox image's apt python3)
+    import tomli as tomllib
 from typing import Any, Mapping, Sequence
 
 from l0vi0x.chain.witness import compute_env_hash, marked_region_sha256, sha256_file
@@ -27,10 +17,9 @@ from l0vi0x.core.models import Witness
 
 ATTACK_BODY_REGION = "ATTACK BODY"
 WRAPPER_CALLSITE_REGION = "WRAPPER CALLSITE"
-
-# Foundry's documented defaults; a fixture may pin others in foundry.toml.
 FOUNDRY_DEFAULT_BLOCK_TIMESTAMP = 1
 FOUNDRY_DEFAULT_BLOCK_NUMBER = 1
+_GENERATED_DIRS = {".git", ".venv", "__pycache__", ".pytest_cache", "out", "cache", "tool_runs", "artifacts", "audits"}
 
 
 class EnvironmentMismatch(ValueError):
@@ -47,6 +36,32 @@ class TreeObservation:
     wrapper_callsite_sha256: str
     harness_library_hashes: dict[str, str]
     deployment_plan_hash: str | None
+    source_manifest_sha256: str
+
+    def to_dict(self) -> dict[str, Any]:
+        return asdict(self)
+
+    @classmethod
+    def from_dict(cls, payload: Mapping[str, Any]) -> "TreeObservation":
+        required = {
+            "compiler", "sanitized_config", "remappings", "template_sha256",
+            "attack_body_sha256", "wrapper_callsite_sha256", "harness_library_hashes",
+            "deployment_plan_hash", "source_manifest_sha256",
+        }
+        missing = sorted(required - set(payload))
+        if missing:
+            raise EnvironmentMismatch(f"environment observation missing fields: {missing}")
+        return cls(
+            compiler=dict(payload["compiler"]),
+            sanitized_config=dict(payload["sanitized_config"]),
+            remappings=str(payload["remappings"]),
+            template_sha256=str(payload["template_sha256"]),
+            attack_body_sha256=str(payload["attack_body_sha256"]),
+            wrapper_callsite_sha256=str(payload["wrapper_callsite_sha256"]),
+            harness_library_hashes={str(k): str(v) for k, v in dict(payload["harness_library_hashes"]).items()},
+            deployment_plan_hash=None if payload["deployment_plan_hash"] is None else str(payload["deployment_plan_hash"]),
+            source_manifest_sha256=str(payload["source_manifest_sha256"]),
+        )
 
 
 def read_foundry_toml(root: str | Path) -> dict[str, Any]:
@@ -78,7 +93,6 @@ def observe_compiler(root: str | Path) -> dict[str, Any]:
 
 
 def initial_block_env_from_config(root: str | Path) -> tuple[int, int]:
-    """(timestamp, block number) Foundry starts a local test with, from the pinned config."""
     profile = _default_profile(root)
     timestamp = profile.get("block_timestamp", FOUNDRY_DEFAULT_BLOCK_TIMESTAMP)
     number = profile.get("block_number", FOUNDRY_DEFAULT_BLOCK_NUMBER)
@@ -86,6 +100,33 @@ def initial_block_env_from_config(root: str | Path) -> tuple[int, int]:
         if isinstance(value, bool) or not isinstance(value, int) or value < 0:
             raise EnvironmentMismatch(f"foundry.toml {label} must be a non-negative integer")
     return timestamp, number
+
+
+def _source_manifest(root: Path) -> str:
+    rows: list[str] = []
+    for path in sorted(root.rglob("*")):
+        if not path.is_file():
+            continue
+        rel = path.relative_to(root)
+        if any(part in _GENERATED_DIRS for part in rel.parts):
+            continue
+        # Runtime logs, local secrets and ephemeral files are not source inputs.
+        if rel.name in {".env", ".env.local"} or (rel.name.startswith(".env.") and rel.name != ".env.example") or "keys" in rel.parts or rel.suffix in {".pyc", ".sqlite", ".db"}:
+            continue
+        rows.append(f"{rel.as_posix()}:{sha256_file(path)}")
+    digest = hashlib.sha256()
+    for row in rows:
+        digest.update((row + "\n").encode("utf-8"))
+    return digest.hexdigest()
+
+
+def _plan_hash(root: Path, paths: Sequence[str], witness_class: str) -> str | None:
+    if witness_class != "local_deployment" or not paths:
+        return None
+    digest = hashlib.sha256()
+    for rel in paths:
+        digest.update(f"{rel}:{sha256_file(root / rel)}\n".encode("utf-8"))
+    return digest.hexdigest()
 
 
 def observe_tree(
@@ -101,47 +142,60 @@ def observe_tree(
     text_path = base / test_file
     try:
         test_text = text_path.read_text(encoding="utf-8")
-        attack_sha = marked_region_sha256(test_text, ATTACK_BODY_REGION)
-        callsite_sha = marked_region_sha256(test_text, WRAPPER_CALLSITE_REGION)
-        template_sha = sha256_file(text_path)
-        libraries = {p: sha256_file(base / p) for p in harness_library_paths}
-        plan_hash: str | None = None
-        if witness_class == "local_deployment" and deployment_plan_paths:
-            digest = hashlib.sha256()
-            for p in deployment_plan_paths:
-                digest.update(f"{p}:{sha256_file(base / p)}\n".encode())
-            plan_hash = digest.hexdigest()
+        observation = TreeObservation(
+            compiler=observe_compiler(base),
+            sanitized_config={
+                "profile": raw.get("profile", {}).get("default", {}),
+                "rpc_endpoints": raw.get("rpc_endpoints", {}),
+            },
+            remappings=(base / "remappings.txt").read_text(encoding="utf-8") if (base / "remappings.txt").exists() else "",
+            template_sha256=sha256_file(text_path),
+            attack_body_sha256=marked_region_sha256(test_text, ATTACK_BODY_REGION),
+            wrapper_callsite_sha256=marked_region_sha256(test_text, WRAPPER_CALLSITE_REGION),
+            harness_library_hashes={p: sha256_file(base / p) for p in harness_library_paths},
+            deployment_plan_hash=_plan_hash(base, deployment_plan_paths, witness_class),
+            source_manifest_sha256=_source_manifest(base),
+        )
     except (OSError, ValueError) as exc:
         raise EnvironmentMismatch(f"cannot observe replay tree: {exc}") from exc
-    remappings_path = base / "remappings.txt"
-    remappings = remappings_path.read_text(encoding="utf-8") if remappings_path.exists() else ""
-    return TreeObservation(
-        compiler=observe_compiler(base),
-        sanitized_config={"profile": raw.get("profile", {}).get("default", {}), "rpc_endpoints": raw.get("rpc_endpoints", {})},
-        remappings=remappings,
-        template_sha256=template_sha,
-        attack_body_sha256=attack_sha,
-        wrapper_callsite_sha256=callsite_sha,
-        harness_library_hashes=libraries,
-        deployment_plan_hash=plan_hash,
-    )
+    return observation
 
 
-def check_declaration(observation: TreeObservation, witness: Witness) -> None:
-    """The tree on disk must be exactly what the witness declares."""
+def check_declaration(observation: TreeObservation, witness: Witness, *, root: str | Path | None = None) -> None:
     if observation.template_sha256 != witness.template_sha256:
-        raise EnvironmentMismatch("test file differs from the declared template hash")
+        raise EnvironmentMismatch("test file differs from declared template hash")
     if observation.attack_body_sha256 != witness.attack_body_sha256:
-        raise EnvironmentMismatch("ATTACK BODY differs from the declared attack-body hash")
+        raise EnvironmentMismatch("ATTACK BODY differs from declared attack-body hash")
     if observation.wrapper_callsite_sha256 != witness.wrapper_callsite_sha256:
-        raise EnvironmentMismatch("WRAPPER CALLSITE differs from the declared call-site hash")
+        raise EnvironmentMismatch("WRAPPER CALLSITE differs from declared call-site hash")
     for key, declared in witness.compiler.items():
         if observation.compiler.get(key) != declared:
-            raise EnvironmentMismatch(f"compiler setting {key!r} differs from the declaration")
+            raise EnvironmentMismatch(f"compiler setting {key!r} differs from declaration")
+    if witness.harness_source_sha256 and witness.harness_source_path:
+        if root is None:
+            raise EnvironmentMismatch("replay root is required to validate the declared harness source")
+        actual = sha256_file(Path(root) / witness.harness_source_path)
+        if actual != witness.harness_source_sha256:
+            raise EnvironmentMismatch("declared harness source hash does not match the replay tree")
 
 
-def environment_hash(observation: TreeObservation, witness: Witness, tool_versions: Mapping[str, str], *, initial_timestamp: int | None = None, initial_block: int | None = None) -> str:
-    return compute_env_hash(
+def environment_hash(
+    observation: TreeObservation,
+    witness: Witness,
+    tool_versions: Mapping[str, str],
+    *,
+    initial_timestamp: int | None = None,
+    initial_block: int | None = None,
+) -> str:
+    payload = {
+        "source_manifest_sha256": observation.source_manifest_sha256,
+        "harness_source_sha256": witness.harness_source_sha256,
+        "wrapper_source_sha256": witness.wrapper_source_sha256,
+        "harness_init_code_sha256": witness.harness_init_code_sha256,
+        "harness_runtime_sha256": witness.harness_runtime_sha256,
+        "wrapper_runtime_sha256": witness.wrapper_runtime_sha256,
+    }
+    base = compute_env_hash(
         compiler=observation.compiler,
         sanitized_config=observation.sanitized_config,
         remappings=observation.remappings,
@@ -158,7 +212,13 @@ def environment_hash(observation: TreeObservation, witness: Witness, tool_versio
         harness_create2_salt=witness.harness_create2_salt.lower(),
         expected_wrapper_depth=witness.expected_wrapper_depth,
         wrapper_callsite_sha256=observation.wrapper_callsite_sha256,
-        tool_versions=dict(tool_versions),
+        tool_versions={**dict(tool_versions), "binding": json_hash(payload)},
         initial_timestamp=initial_timestamp,
         initial_block=initial_block,
     )
+    return base
+
+
+def json_hash(payload: Any) -> str:
+    raw = json.dumps(payload, sort_keys=True, separators=(",", ":"), default=str).encode("utf-8")
+    return hashlib.sha256(raw).hexdigest()

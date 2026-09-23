@@ -1,0 +1,19 @@
+[profile.default]
+src = "src"
+test = "test"
+out = "out"
+libs = []
+ffi = false
+fs_permissions = []
+always_use_create_2_factory = true
+optimizer = true
+optimizer_runs = 200
+solc_version = "0.8.24"
+evm_version = "cancun"
+
+[profile.default.fuzz]
+runs = 256
+seed = "0x0000000000000000000000000000000000000000000000000000000000000001"
+
+[rpc_endpoints]
+l0vi0x_gate = "${GATE_URL}"

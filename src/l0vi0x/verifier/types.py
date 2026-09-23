@@ -20,13 +20,11 @@ class CheckResult:
 
 @dataclass(frozen=True, slots=True)
 class ReplayEvidence:
-    certificate: ReplayCertificate | None
-    traces: tuple[TraceSummary, ...] = ()
-    environment_hashes: tuple[str, ...] = ()
-    control_hashes: tuple[str, ...] = ()
-    observed_record_hashes: tuple[str, ...] = ()
+    """Evidence root only; all hashes are derived from these artifacts by the verifier."""
+    root: Path
+    run_dirs: tuple[Path, ...]
+    certificate: ReplayCertificate | None = None
     certificate_key: bytes | None = None
-    raw_artifact_paths: tuple[str, ...] = ()
 
 
 @dataclass(frozen=True, slots=True)
@@ -37,14 +35,16 @@ class BuildEvidence:
     tool_lock_verified: bool = False
     tool_lock_problems: tuple[str, ...] = ()
     pinned_compiler: str | None = None
+    required_tools: tuple[str, ...] = ("forge", "anvil", "cast")
 
 
 @dataclass(frozen=True, slots=True)
 class ControlEvidence:
     passed: bool
     matching_assertion: bool
-    observed_state_changed: bool = False
-    assertion_event_count: int = 0
+    observed_state_changed: bool
+    assertion_event_count: int
+    source: str = "derived"
 
 
 @dataclass(frozen=True, slots=True)
@@ -60,6 +60,7 @@ class SnapshotEvidence:
     observed_capital_wei: int | None = None
     slippage_bps: int | None = None
     sensitivity: dict[str, float] = field(default_factory=dict)
+    sensitivity_scenarios: dict[str, dict[str, Any]] = field(default_factory=dict)
 
 
 @dataclass(frozen=True, slots=True)
@@ -67,25 +68,28 @@ class HarnessEvidence:
     harness_address: str
     wrapper_address: str
     expected_wrapper_depth: int
-    observed_wrapper_depth: int | None
-    observed_runtime_sha256: str | None
-    expected_runtime_sha256: str | None
-    observed_source_sha256: str | None = None
-    expected_source_sha256: str | None = None
-    wrapper_callsite_sha256: str | None = None
-    expected_wrapper_callsite_sha256: str | None = None
-    create2_deployer: str | None = None
-    create2_salt: str | None = None
-    create2_init_code_hex: str | None = None
-    assertion_emitter: str | None = None
-    assertion_event_depth: int | None = None
-    assertion_event_caller: str | None = None
-    observed_actor_addresses: tuple[str, ...] = ()
-    observed_token_addresses: tuple[str, ...] = ()
-    expected_actor_addresses: tuple[str, ...] = ()
-    expected_token_addresses: tuple[str, ...] = ()
-    wrapper_event_count: int = 0
-    harness_event_count: int = 0
+    observed_wrapper_depth: int
+    observed_runtime_sha256: str
+    expected_runtime_sha256: str
+    observed_source_sha256: str
+    expected_source_sha256: str
+    wrapper_runtime_sha256: str
+    expected_wrapper_runtime_sha256: str
+    wrapper_source_sha256: str
+    expected_wrapper_source_sha256: str
+    create2_deployer: str
+    create2_salt: str
+    create2_init_code_sha256: str
+    assertion_emitter: str
+    assertion_event_depth: int
+    assertion_event_caller: str
+    observed_actor_addresses: tuple[str, ...]
+    observed_token_addresses: tuple[str, ...]
+    expected_actor_addresses: tuple[str, ...]
+    expected_token_addresses: tuple[str, ...]
+    assertion_event_count: int
+    economic_event_count: int
+    control_event_count: int
 
 
 @dataclass(frozen=True, slots=True)
@@ -97,7 +101,9 @@ class EconomicEvidence:
     upstream_state_match: bool | None = None
     production_required: bool = False
     price_sources: tuple[str, ...] = ()
-    evidence_complete: bool = True
+    sensitivity: dict[str, float] = field(default_factory=dict)
+    sensitivity_scenarios: dict[str, dict[str, Any]] = field(default_factory=dict)
+    evidence_complete: bool = False
 
 
 @dataclass(frozen=True, slots=True)
@@ -115,6 +121,7 @@ class VerificationContext:
     known_issues: tuple[KnownIssue, ...] = ()
     replay: ReplayEvidence | None = None
     build: BuildEvidence | None = None
+    # These remain as diagnostic snapshots only. Production verification re-derives them from replay roots.
     control: ControlEvidence | None = None
     harness: HarnessEvidence | None = None
     economics: EconomicEvidence | None = None
@@ -124,8 +131,10 @@ class VerificationContext:
     cheatcode_catalog_path: Path | None = None
     foundry_config_path: Path | None = None
     tool_lock_path: Path | None = None
+    price_evidence_path: Path | None = None
     pinned_impact_usd: float | None = None
     severity_model_verified_at: str | None = None
+    require_certificate: bool = True
 
 
 @dataclass(frozen=True, slots=True)

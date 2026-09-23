@@ -44,6 +44,12 @@ from l0vi0x.chain.cheatcode_abi import (
 CANONICAL_TRACE_SCHEMA = "l0vi0x.foundry.trace.v1"
 ASSERTION_EVENT_SIGNATURE = "AssertionChecked(bytes32,string,string,int256,int256,bool)"
 ASSERTION_TOPIC0 = "0x" + keccak(ASSERTION_EVENT_SIGNATURE.encode("ascii")).hex()
+CONTROL_EVENT_SIGNATURE = "ControlObserved(bytes32,bool)"
+CONTROL_TOPIC0 = "0x" + keccak(CONTROL_EVENT_SIGNATURE.encode("ascii")).hex()
+CONTEXT_EVENT_SIGNATURE = "AssertionContext(bytes32,address,address)"
+CONTEXT_TOPIC0 = "0x" + keccak(CONTEXT_EVENT_SIGNATURE.encode("ascii")).hex()
+ECON_EVENT_SIGNATURE = "EconomicSnapshot(bytes32,address,address,uint256,uint256,uint256,uint256,uint256,int256)"
+ECON_TOPIC0 = "0x" + keccak(ECON_EVENT_SIGNATURE.encode("ascii")).hex()
 TRANSFER_TOPIC0 = "0x" + keccak(b"Transfer(address,address,uint256)").hex()
 
 _PHASES = {"Deployment": "setup", "Setup": "setup", "Execution": "witness"}
@@ -297,6 +303,15 @@ def _convert_log(entry: Any, reverted: bool) -> tuple[dict[str, Any], dict[str, 
     if record["topics"] and record["topics"][0] == ASSERTION_TOPIC0:
         record["event"] = "AssertionChecked"
         record.update(_decode_assertion(record["topics"], record["data"]))
+    elif record["topics"] and record["topics"][0] == CONTROL_TOPIC0:
+        record["event"] = "ControlObserved"
+        record.update(_decode_control(record["topics"], record["data"]))
+    elif record["topics"] and record["topics"][0] == CONTEXT_TOPIC0:
+        record["event"] = "AssertionContext"
+        record.update(_decode_context(record["topics"], record["data"]))
+    elif record["topics"] and record["topics"][0] == ECON_TOPIC0:
+        record["event"] = "EconomicSnapshot"
+        record.update(_decode_economic(record["topics"], record["data"]))
     elif not reverted and record["topics"] and record["topics"][0] == TRANSFER_TOPIC0:
         transfer = _decode_transfer(record)
     return record, transfer
@@ -314,8 +329,9 @@ def _decode_assertion(topics: list[str], data_hex: str) -> dict[str, Any]:
     if len(topics) != 2 or len(topics[1]) != 66:
         raise FoundryTraceFormatError("AssertionChecked must have exactly one indexed argument")
     try:
-        kind, target, operator, observed, expected, ok = decode_abi_arguments(
-            ["string", "string", "string", "int256", "int256", "bool"], bytes.fromhex(data_hex[2:])
+        kind, target, observed, expected, ok = decode_abi_arguments(
+            ["string", "string", "int256", "int256", "bool"],
+            bytes.fromhex(data_hex[2:]),
         )
     except CheatcodeDecodeError as exc:
         raise FoundryTraceFormatError(f"malformed AssertionChecked event: {exc}") from exc
@@ -323,10 +339,52 @@ def _decode_assertion(topics: list[str], data_hex: str) -> dict[str, Any]:
         "id": _bytes32_label(topics[1]),
         "kind": kind,
         "target": target,
-        "operator": operator,
         "observed": observed,
         "expected": expected,
         "ok": ok,
+    }
+
+
+def _decode_context(topics: list[str], data_hex: str) -> dict[str, Any]:
+    if len(topics) != 2 or len(topics[1]) != 66:
+        raise FoundryTraceFormatError("AssertionContext must have one indexed bytes32 id")
+    try:
+        actor, token = decode_abi_arguments(["address", "address"], bytes.fromhex(data_hex[2:]))
+    except CheatcodeDecodeError as exc:
+        raise FoundryTraceFormatError(f"malformed AssertionContext event: {exc}") from exc
+    return {"id": _bytes32_label(topics[1]), "actor": actor, "token": token}
+
+
+def _decode_control(topics: list[str], data_hex: str) -> dict[str, Any]:
+    if len(topics) != 2 or len(topics[1]) != 66:
+        raise FoundryTraceFormatError("ControlObserved must have one indexed bytes32 id")
+    try:
+        (changed,) = decode_abi_arguments(["bool"], bytes.fromhex(data_hex[2:]))
+    except CheatcodeDecodeError as exc:
+        raise FoundryTraceFormatError(f"malformed ControlObserved event: {exc}") from exc
+    return {"id": _bytes32_label(topics[1]), "state_changed": bool(changed)}
+
+
+def _decode_economic(topics: list[str], data_hex: str) -> dict[str, Any]:
+    if len(topics) != 2 or len(topics[1]) != 66:
+        raise FoundryTraceFormatError("EconomicSnapshot must have one indexed bytes32 id")
+    try:
+        actor, token, native_before, native_after, token_before, token_after, capital, protocol_delta = decode_abi_arguments(
+            ["address", "address", "uint256", "uint256", "uint256", "uint256", "uint256", "int256"],
+            bytes.fromhex(data_hex[2:]),
+        )
+    except CheatcodeDecodeError as exc:
+        raise FoundryTraceFormatError(f"malformed EconomicSnapshot event: {exc}") from exc
+    return {
+        "id": _bytes32_label(topics[1]),
+        "actor": actor,
+        "token": token,
+        "native_before": int(native_before),
+        "native_after": int(native_after),
+        "token_before": int(token_before),
+        "token_after": int(token_after),
+        "declared_capital": int(capital),
+        "protocol_assets_delta": int(protocol_delta),
     }
 
 

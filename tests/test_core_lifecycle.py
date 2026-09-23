@@ -83,18 +83,18 @@ def test_reopen_requires_human_reason_new_evidence_and_second_reviewer_after_thr
     h = make_h(HState.CLOSED, reopen_count=0)
     with pytest.raises(IllegalTransition):
         transition(construct_driver_token("driver"), h, HState.INVESTIGATING, "reopen", ["human_reason:r", "new_evidence:e"])
-    transition(construct_human_override_token("reviewer"), h, HState.INVESTIGATING, "reopen", ["human_reason:r", "new_evidence:e"])
+    transition(construct_human_override_token("reviewer"), h, HState.INVESTIGATING, "reopen", ["human_reason:r", "new_evidence:e", "replacement:f"])
     assert h.reopen_count == 1
 
     for count, source in [(1, HState.CLOSED), (2, HState.CLOSED),]:
         h.state = source
         h.reopen_count = count
-        transition(construct_human_override_token("reviewer"), h, HState.INVESTIGATING, "reopen", ["human_reason:r", "new_evidence:e"])
+        transition(construct_human_override_token("reviewer"), h, HState.INVESTIGATING, "reopen", ["human_reason:r", "new_evidence:e", "replacement:f"])
     assert h.reopen_count == 3
     h.state = HState.CLOSED
     with pytest.raises(IllegalTransition):
-        transition(construct_human_override_token("reviewer"), h, HState.INVESTIGATING, "reopen", ["human_reason:r", "new_evidence:e"])
-    transition(construct_human_override_token("reviewer"), h, HState.INVESTIGATING, "reopen", ["human_reason:r", "new_evidence:e", "reviewer2:r2"])
+        transition(construct_human_override_token("reviewer"), h, HState.INVESTIGATING, "reopen", ["human_reason:r", "new_evidence:e", "replacement:f"])
+    transition(construct_human_override_token("reviewer"), h, HState.INVESTIGATING, "reopen", ["human_reason:r", "new_evidence:e", "replacement:f", "reviewer2:r2"])
     assert h.reopen_count == 4
 
 
@@ -113,7 +113,7 @@ def test_store_transition_is_event_first_and_emits_reopen_threshold():
     # Set the cumulative reopen count through the event-backed metadata path.
     store.save("hypothesis", h.id, {"reopen_count": 2, "cause": "restore historical count", "evidence": ["human_reason:fixture"]})
     h.reopen_count = 2
-    store.transition_hypothesis(construct_human_override_token("reviewer"), h, HState.INVESTIGATING, "reopen", ["human_reason:r", "new_evidence:e"])
+    store.transition_hypothesis(construct_human_override_token("reviewer"), h, HState.INVESTIGATING, "reopen", ["human_reason:r", "new_evidence:e", "replacement:f"])
     events = store.events
     assert [e["kind"] for e in events] == ["hyp_created", "hyp_transition", "hyp_updated", "hyp_transition", "reopen_threshold_exceeded"]
     assert store.get("hypothesis", h.id)["state"] == "INVESTIGATING"

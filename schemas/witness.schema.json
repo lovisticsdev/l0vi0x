@@ -176,9 +176,69 @@
       "title": "Harness Address",
       "type": "string"
     },
+    "harness_create2_deployer": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Harness Create2 Deployer"
+    },
     "harness_create2_salt": {
       "title": "Harness Create2 Salt",
       "type": "string"
+    },
+    "harness_init_code_sha256": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Harness Init Code Sha256"
+    },
+    "harness_runtime_sha256": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Harness Runtime Sha256"
+    },
+    "harness_source_path": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Harness Source Path"
+    },
+    "harness_source_sha256": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Harness Source Sha256"
     },
     "initial_capital_wei": {
       "default": 0,
@@ -239,6 +299,13 @@
       "title": "Test Name",
       "type": "string"
     },
+    "token_decimals": {
+      "additionalProperties": {
+        "type": "integer"
+      },
+      "title": "Token Decimals",
+      "type": "object"
+    },
     "witness_class": {
       "enum": [
         "deployed_fork",
@@ -247,9 +314,57 @@
       "title": "Witness Class",
       "type": "string"
     },
+    "wrapper_address": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Wrapper Address"
+    },
     "wrapper_callsite_sha256": {
       "title": "Wrapper Callsite Sha256",
       "type": "string"
+    },
+    "wrapper_runtime_sha256": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Wrapper Runtime Sha256"
+    },
+    "wrapper_source_path": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Wrapper Source Path"
+    },
+    "wrapper_source_sha256": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Wrapper Source Sha256"
     }
   },
   "required": [

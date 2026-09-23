@@ -1,5 +1,6 @@
 FROM python:3.12-slim
-RUN useradd --create-home --uid 10001 gate
+RUN pip install --no-cache-dir 'pyyaml>=6.0'
+RUN useradd --create-home --uid 10002 gate
 WORKDIR /app
 COPY docker/rpc_gate.py /app/rpc_gate.py
 COPY config/policy/rpc_allowlist.yaml /app/config/policy/rpc_allowlist.yaml

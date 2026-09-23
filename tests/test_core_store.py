@@ -1,4 +1,5 @@
 import sqlite3
+import json
 
 import pytest
 
@@ -63,10 +64,65 @@ def test_ladder_award_is_event_first_and_rebuildable():
     store = Store(":memory:")
     h = make_h()
     store.create_hypothesis(h.model_dump(mode="json"))
+    store.award_ladder(construct_driver_token("driver"), h, LadderProof("execution", 3, ["experiment"]))
     proof = LadderProof("execution", 4, ["run_receipt"])
     store.award_ladder(construct_driver_token("driver"), h, proof)
     assert h.ladder["execution"] == 4
     assert store.events[-1]["kind"] == "hyp_ladder_award"
     assert store.get("hypothesis", h.id)["ladder"]["execution"] == 4
     assert store.verify_hypothesis_rebuild(h.id)
+    store.close()
+
+
+def test_event_log_is_append_only_and_generic_rows_are_event_linked():
+    store = Store(":memory:")
+    event = store.record_event("assumption", "seed", {"kind": "entity_saved", "entity_op": "insert", "snapshot": {}})
+    with pytest.raises(sqlite3.DatabaseError):
+        store.submit(lambda conn: conn.execute("UPDATE events SET payload='{}' WHERE id=?", (event["id"],)))
+    with pytest.raises(sqlite3.DatabaseError):
+        store.submit(lambda conn: conn.execute("DELETE FROM events WHERE id=?", (event["id"],)))
+
+    with pytest.raises(sqlite3.DatabaseError):
+        store.submit(lambda conn: conn.execute("INSERT INTO assumptions(id,status,body) VALUES('A1','candidate','{}')"))
+    store.save("assumption", "A1", {"status": "candidate", "note": "v1"})
+    with pytest.raises(sqlite3.DatabaseError):
+        store.submit(lambda conn: conn.execute("UPDATE assumptions SET body='{}' WHERE id='A1'"))
+    store.save("assumption", "A1", {"status": "verified", "note": "v2"})
+    with pytest.raises(sqlite3.DatabaseError):
+        store.submit(lambda conn: conn.execute("UPDATE assumptions SET body='{}' WHERE id='A1'"))
+    with pytest.raises(sqlite3.DatabaseError):
+        store.submit(lambda conn: conn.execute("DELETE FROM assumptions WHERE id='A1'"))
+    store.close()
+
+
+def test_generic_event_snapshot_must_match_exact_row_state() -> None:
+    store = Store(":memory:")
+    store.save("assumption", "A1", {"status": "unverified", "note": "initial"})
+    with pytest.raises(sqlite3.DatabaseError):
+        def forged(conn):
+            event = store.record_event(
+                "assumption",
+                "A1",
+                {
+                    "kind": "entity_saved",
+                    "entity_op": "update",
+                    "row_snapshot": {"id": "A1", "status": "verified", "body": "{\"id\":\"A1\",\"note\":\"different\"}"},
+                },
+                _conn=conn,
+            )
+            conn.execute(
+                "UPDATE assumptions SET status=?, body=?, last_event_id=? WHERE id=?",
+                ("unverified", json.dumps({"id": "A1", "note": "attacker-controlled"}, sort_keys=True, separators=(",", ":")), int(event["id"]), "A1"),
+            )
+        store.submit(forged)
+    assert store.get("assumption", "A1")["note"] == "initial"
+    store.close()
+
+
+def test_generic_event_snapshot_accepts_exact_row_state() -> None:
+    store = Store(":memory:")
+    store.save("assumption", "A1", {"status": "unverified", "note": "initial"})
+    store.save("assumption", "A1", {"status": "verified", "note": "updated", "cause": "test", "evidence": ["E1"]})
+    assert store.get("assumption", "A1")["status"] == "verified"
+    assert store.get("assumption", "A1")["note"] == "updated"
     store.close()

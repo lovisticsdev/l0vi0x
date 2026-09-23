@@ -5,7 +5,7 @@ security:
   rpc_endpoints: {l0vi0x_gate: gate-only}
   always_use_create_2_factory: true
   fuzz: {runs: 256, seed: 1}
-allowed_profile_keys: [src, test, out, libs, solc_version, evm_version, optimizer, optimizer_runs]
+allowed_profile_keys: [src, test, out, libs, solc_version, evm_version, optimizer, optimizer_runs, always_use_create_2_factory, fuzz]
 forbidden_keys:
   - rpc_endpoints
   - private_keys

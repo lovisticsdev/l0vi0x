@@ -8,7 +8,9 @@ _SECRET_PATTERNS = [
     re.compile(r"-----BEGIN [A-Z0-9 ]*PRIVATE KEY-----[\s\S]*?-----END [A-Z0-9 ]*PRIVATE KEY-----"),
     re.compile(r"\bsk-ant-[A-Za-z0-9_-]{16,}\b"),
     re.compile(r"\bsk-proj-[A-Za-z0-9_-]{16,}\b"),
-    re.compile(r"\bsk-[A-Za-z0-9]{20,}\b"),
+    # Common project/provider token family; keep this deliberately broad because
+    # persisted tool records must fail closed on secret-shaped values.
+    re.compile(r"\bsk-[A-Za-z0-9][A-Za-z0-9_-]{7,}\b"),
     re.compile(r"\bgsk_[A-Za-z0-9_-]{20,}\b"),
     re.compile(r"\bnvapi-[A-Za-z0-9_-]{16,}\b"),
     re.compile(r"\bAIza[0-9A-Za-z_-]{20,}\b"),

@@ -1,11 +1,36 @@
+FROM ghcr.io/foundry-rs/foundry@sha256:2e4287278639262de76db72477301d5d3212fa1b1cce710d7d148750a46ce9e7 AS foundry
+
 FROM python:3.12-slim
-ARG FOUNDRY_VERSION
+
+COPY --from=foundry /usr/local/bin/forge /usr/local/bin/forge
+COPY --from=foundry /usr/local/bin/cast /usr/local/bin/cast
+COPY --from=foundry /usr/local/bin/anvil /usr/local/bin/anvil
+
+RUN apt-get update \
+    && apt-get install -y --no-install-recommends ca-certificates git \
+    && rm -rf /var/lib/apt/lists/* \
+    && pip install --no-cache-dir \
+       'pydantic>=2.0' \
+       'pydantic-settings>=2.0' \
+       'pyyaml>=6.0' \
+       'eth-hash[pycryptodome]>=0.7.0' \
+       'tomli>=2.0.1'
+
+RUN git config --system --add safe.directory /workspace/source
 RUN useradd --create-home --uid 10001 agent
-WORKDIR /workspace/task
+WORKDIR /workspace/source
 COPY --chown=agent:agent . /opt/l0vi0x
-# Tool binaries are supplied by the audited build environment / pinned image build.
-# No API, RPC, certificate, or signing key is copied into the image.
+COPY --chown=agent:agent docker/vendor/solc/0.8.24 /opt/l0vi0x/vendor/solc/0.8.24
+
+RUN test -x /opt/l0vi0x/vendor/solc/0.8.24/solc-0.8.24 \
+    && /opt/l0vi0x/vendor/solc/0.8.24/solc-0.8.24 --version
+
+ENV PYTHONPATH=/opt/l0vi0x/src \
+    HOME=/home/agent \
+    PYTHONUNBUFFERED=1 \
+    FOUNDRY_OFFLINE=true \
+    FOUNDRY_SOLC=/opt/l0vi0x/vendor/solc/0.8.24/solc-0.8.24
+
 USER agent
-ENV HOME=/home/agent PYTHONUNBUFFERED=1
 ENTRYPOINT []
-CMD ["python3", "-m", "l0vi0x.tools.sandbox_entrypoint"]
+CMD ["python3", "-m", "l0vi0x.driver.m1b_acceptance", "--phase", "collect"]

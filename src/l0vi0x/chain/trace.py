@@ -220,11 +220,17 @@ def parse_trace(
             if isinstance(transfer, dict):
                 transfers.append(_transfer_from_mapping(transfer, depth=depth, phase=phase))
 
+        contexts = {str(log.get("id")): log for log in item.get("logs", []) if isinstance(log, dict) and log.get("event") == "AssertionContext"}
         for log in item.get("logs", []):
             if not isinstance(log, dict) or log.get("reverted") or item.get("success") is False:
                 continue
             if log.get("event") == "AssertionChecked":
-                assertions.append(dict(log, depth=depth, caller=log.get("caller", item.get("caller")), emitter=log.get("emitter", to)))
+                enriched = dict(log, depth=depth, caller=log.get("caller", item.get("caller")), emitter=log.get("emitter", to))
+                context = contexts.get(str(enriched.get("id")))
+                if context:
+                    enriched["actor"] = context.get("actor")
+                    enriched["token"] = context.get("token")
+                assertions.append(enriched)
 
     return TraceSummary(
         tuple(frames),

@@ -70,6 +70,7 @@ def validate_transition(
         _require(token.human_override, "reopening is human-override only")
         _require(_has(evidence, "human_reason:"), "reopening requires a human reason evidence reference")
         _require(_has(evidence, "new_evidence:"), "reopening requires new evidence")
+        _require(_has(evidence, "replacement:"), "reopening requires a replacement evidence reference")
         if hypothesis.reopen_count >= 3:
             _require(_has(evidence, "reviewer2:"), "a fourth or later reopen requires second-reviewer evidence")
 

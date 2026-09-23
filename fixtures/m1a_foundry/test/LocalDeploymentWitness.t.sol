@@ -7,7 +7,7 @@ import {Create2HarnessFactory} from "../src/Create2HarnessFactory.sol";
 import {WitnessHarness} from "./WitnessHarness.sol";
 
 contract LocalDeploymentWitness {
-    Vm internal constant vm = Vm(0x7109709ecfa91a80626ff3989d68f67f5b1dd12d);
+    Vm internal constant vm = Vm(0x7109709ECfa91a80626fF3989D68f67F5b1DD12D);
     address internal constant ATTACKER = address(0xA11CE);
     bytes32 internal constant HARNESS_SALT = keccak256("l0vi0x-m1a-local");
     M1aTarget internal target;
@@ -17,19 +17,30 @@ contract LocalDeploymentWitness {
     function setUp() public {
         target = new M1aTarget();
         factory = new Create2HarnessFactory();
-        bytes memory initCode = abi.encodePacked(type(WitnessHarness).creationCode, abi.encode(address(factory)));
+        bytes memory initCode = abi.encodePacked(
+            type(WitnessHarness).creationCode,
+            abi.encode(address(factory), address(target))
+        );
         harness = WitnessHarness(factory.deploy(HARNESS_SALT, initCode));
         emit WitnessHarness.HarnessDeployed(address(harness), address(factory), HARNESS_SALT);
         vm.deal(ATTACKER, 1 ether);
     }
 
     function test_witness() public {
-        uint256 beforeValue = target.snapshot(ATTACKER);
+        // BEGIN ATTACK BODY
         target.fund{value: 0}(ATTACKER, 7);
-        uint256 afterValue = target.snapshot(ATTACKER);
-        harness.check(keccak256("A-local"), "credit", int256(afterValue-beforeValue), 7);
+        // BEGIN WRAPPER CALLSITE
+        factory.check(
+            address(harness),
+            keccak256("A-local"),
+            ATTACKER,
+            "credit",
+            7
+        );
+        // END WRAPPER CALLSITE
         vm.warp(1001);
         vm.roll(2);
+        // END ATTACK BODY
     }
 
     function test_control() public {

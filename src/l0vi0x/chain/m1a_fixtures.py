@@ -1,5 +1,11 @@
 from __future__ import annotations
 
+# Deterministic M1a integration-fixture constants.
+# Keep these shared between the stack and the Solidity fixtures.
+FIXTURE_CHAIN_ID = 31337
+FIXTURE_ATTACKER = "0x000000000000000000000000000000000000a11ce"
+FIXTURE_CREDIT = 3
+
 from dataclasses import dataclass
 from pathlib import Path
 import hashlib

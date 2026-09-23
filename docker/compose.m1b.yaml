@@ -1,0 +1,106 @@
+services:
+  gate_anvil:
+    image: ghcr.io/foundry-rs/foundry@sha256:2e4287278639262de76db72477301d5d3212fa1b1cce710d7d148750a46ce9e7
+    entrypoint: ["anvil"]
+    command:
+      [
+        "--host",
+        "0.0.0.0",
+        "--port",
+        "8546",
+        "--chain-id",
+        "31337",
+        "--timestamp",
+        "1700000000",
+        "--silent",
+      ]
+    networks: [gate]
+    read_only: true
+    security_opt: [no-new-privileges:true]
+    cap_drop: [ALL]
+    tmpfs: [/tmp]
+    healthcheck:
+      test:
+        [
+          "CMD",
+          "cast",
+          "rpc",
+          "eth_chainId",
+          "--rpc-url",
+          "http://127.0.0.1:8546",
+        ]
+      interval: 1s
+      timeout: 2s
+      retries: 30
+      start_period: 1s
+
+  rpc_gate:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile.gate
+    environment:
+      GATE_AGENT_TOKEN: ${GATE_AGENT_TOKEN:-m1b-agent-token}
+      GATE_UPSTREAM_TOKEN: ${GATE_UPSTREAM_TOKEN:-m1b-upstream-token}
+      ANVIL_RPC_URL: http://gate_anvil:8546
+      UPSTREAM_RPC_URL: http://gate_anvil:8546
+      CROSS_CHECK_RPC_URL: http://gate_anvil:8546
+      AUDIT_ID: ${AUDIT_ID:-M1B}
+      RPC_GATE_LOG: /var/log/l0vi0x/rpc-gate.jsonl
+      RPC_GATE_HOST: 0.0.0.0
+      RPC_GATE_PORT: "8545"
+      START_ANVIL: "0"
+    depends_on:
+      gate_anvil:
+        condition: service_healthy
+    networks: [gate, sandbox]
+    ports:
+      - "127.0.0.1:${RPC_GATE_HOST_PORT:-8545}:8545"
+    read_only: true
+    security_opt: [no-new-privileges:true]
+    cap_drop: [ALL]
+    group_add:
+      - "10001"
+    tmpfs:
+      - /tmp
+      - /home/agent:mode=1777,uid=10001,gid=10001
+    volumes:
+      - ${SANDBOX_TASK_DIR:-../eval/private/m1b-acceptance}/rpc-gate:/var/log/l0vi0x:rw
+    healthcheck:
+      test:
+        [
+          "CMD",
+          "python3",
+          "/app/rpc_gate.py",
+          "--healthcheck",
+        ]
+      interval: 1s
+      timeout: 3s
+      retries: 30
+      start_period: 1s
+
+  sandbox:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile.sandbox
+    depends_on:
+      rpc_gate:
+        condition: service_healthy
+    networks: [sandbox]
+    environment:
+      L0VI0X_REPO_ROOT: /workspace/source
+      L0VI0X_WORK_ROOT: /workspace/task
+      GATE_URL: http://agent:${GATE_AGENT_TOKEN:-m1b-agent-token}@rpc_gate:8545/agent
+    read_only: true
+    security_opt: [no-new-privileges:true]
+    cap_drop: [ALL]
+    tmpfs:
+      - /tmp
+      - /home/agent:mode=1777,uid=10001,gid=10001
+    volumes:
+      - ${REPO_ROOT:-..}:/workspace/source:ro
+      - ${SANDBOX_TASK_DIR:-../eval/private/m1b-acceptance}:/workspace/task:rw
+
+networks:
+  gate:
+  sandbox:
+    internal: true
