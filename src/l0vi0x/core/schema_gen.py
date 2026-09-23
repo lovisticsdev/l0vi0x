@@ -8,8 +8,8 @@ from pydantic import TypeAdapter
 from l0vi0x.core.models import (
     Assumption, BudgetReservation, CampaignPlan, DisputeRecord, Experiment,
     FailureRecord, Finding, HumanReviewItem, Hypothesis, Invariant,
-    KnownIssue, ObligationCell, ProtocolModel, ReplayCertificate, Scope, Task,
-    TaskRecord, Witness,
+    KnownIssue, ModelProfile, ObligationCell, ProtocolModel, ReplayCertificate,
+    Scope, StackPolicy, Task, TaskRecord, Witness,
 )
 
 
@@ -32,6 +32,8 @@ _SCHEMA_TYPES = [
     (HumanReviewItem, "human_review.schema.json"),
     (DisputeRecord, "dispute_record.schema.json"),
     (BudgetReservation, "budget_reservation.schema.json"),
+    (ModelProfile, "model_profile.schema.json"),
+    (StackPolicy, "stack_policy.schema.json"),
 ]
 
 

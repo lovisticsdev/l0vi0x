@@ -11,7 +11,7 @@ def test_all_plan_schemas_exist_and_are_generated_from_models(tmp_path):
     root = Path(__file__).resolve().parents[1]
     schema_dir = tmp_path / "schemas"
     written = generate_schemas(schema_dir)
-    assert len(written) == 18
+    assert len(written) == 20
     assert check_schema_drift(schema_dir) == []
     assert check_schema_drift(root / "schemas") == []
 

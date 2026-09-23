@@ -496,3 +496,50 @@ class ReplayCertificate(Strict):
     cross_check_sha256: str | None = None
     mac: str
     issued_at: datetime
+
+
+PricingTier: TypeAlias = Literal["free", "shadow", "paid"]
+
+
+class ModelProfile(Strict):
+    """A model as observed by `doctor`: what it can do right now, not just
+    static config. One of these, per model, is what native probing writes
+    into `models.lock.yaml` (M2.3)."""
+
+    provider: str
+    model_id: str
+    family: str
+    roles: list[str] = Field(default_factory=list)
+    context_window: int = Field(gt=0)
+    capabilities: dict[str, bool] = Field(default_factory=dict)
+    pricing_tier: PricingTier = "paid"
+    terms_version: str
+    terms_observed_at: datetime
+    pricing_version: str
+    pricing_observed_at: datetime
+    deprecated: bool = False
+
+    @model_validator(mode="after")
+    def _identity(self):
+        if not self.provider.strip() or not self.model_id.strip():
+            raise ValueError("provider and model_id must be non-empty")
+        return self
+
+
+class StackPolicy(Strict):
+    """Which models a stack (unit_fake / free_dev / a prod stack) may select.
+
+    `decisions: false` marks a stack whose runs are excluded from
+    calibration, KB promotion, and benchmark claims (build plan, "Which
+    stack each milestone uses")."""
+
+    stack: str
+    kind: Literal["dev", "prod"]
+    decisions: bool
+    allowed_pricing_tiers: list[PricingTier] = Field(default_factory=list)
+
+    @model_validator(mode="after")
+    def _prod_excludes_free_and_shadow(self):
+        if self.kind == "prod" and ({"free", "shadow"} & set(self.allowed_pricing_tiers)):
+            raise ValueError("a prod stack cannot allow free or shadow-priced models")
+        return self
