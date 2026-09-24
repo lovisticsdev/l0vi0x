@@ -1,0 +1,14 @@
+# Freshness thresholds for the terms/pricing/privacy gate (M2.5).
+#
+# A model whose terms_observed_at / pricing_observed_at (recorded at
+# doctor-probe time, see core.models.ModelProfile) is older than these
+# thresholds is refused routing outright -- this is a hard gate, not a
+# warning. Per-provider overrides can be added under `providers:` if a
+# specific provider's terms/pricing change on a different cadence than
+# the default; absent an override, `default` applies to everyone.
+
+default:
+  max_terms_age_days: 30
+  max_pricing_age_days: 30
+
+providers: {}
