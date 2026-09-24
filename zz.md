@@ -1,82 +1,66 @@
-lovisticsdev@Mobilith:~/projects/l0vi0x$ git log
-commit 64a97e4e2fe7454532c3ba2e5bd613dfe5ed3026 (HEAD -> development, origin/development)
-Author: Lovice Ochieng <lovisticsdev@gmail.com>
-Date:   Wed Sep 23 21:45:37 2026 +0300
+lovisticsdev@Mobilith:~/projects/l0vi0x$ git log --oneline
+7df4b9e (HEAD -> development) M2.1 — Fake adapter first, then openai_compat
+2290656 M2.0 — Model/config schemas
+64a97e4 (origin/development) fix: complete M1a Foundry acceptance and M1b integration
+0315cb5 candidate baseline for M0-M1b
+4f8e930 feat: implement M0-M1b security research foundation
+e403d9e chore: initial l0vi0x project scaffold
+lovisticsdev@Mobilith:~/projects/l0vi0x$ make test
+uv run --locked pytest tests
+........................................s.....................................................F.....                                                                                                                                                                                                           [100%]
+====================================================================================================================================================== FAILURES ======================================================================================================================================================
+_____________________________________________________________________________________________________________________________ test_all_plan_schemas_exist_and_are_generated_from_models ______________________________________________________________________________________________________________________________
 
-    fix: complete M1a Foundry acceptance and M1b integration
+tmp_path = PosixPath('/tmp/pytest-of-lovisticsdev/pytest-3/test_all_plan_schemas_exist_an0')
 
-commit 0315cb5fe8054d221596bf32615f3f757084e265
-Author: Lovice Ochieng <lovisticsdev@gmail.com>
-Date:   Mon Sep 21 14:06:39 2026 +0300
+    def test_all_plan_schemas_exist_and_are_generated_from_models(tmp_path):
+        root = Path(__file__).resolve().parents[1]
+        schema_dir = tmp_path / "schemas"
+        written = generate_schemas(schema_dir)
+        assert len(written) == 20
+        assert check_schema_drift(schema_dir) == []
+>       assert check_schema_drift(root / "schemas") == []
+E       AssertionError: assert ['model_profi....schema.json'] == []
+E         
+E         Left contains 2 more items, first extra item: 'model_profile.schema.json'
+E         Use -v to get more diff
 
-    candidate baseline for M0-M1b
-
-commit 4f8e9306225c38ec458c8faf6df556db7c3c39a6
-Author: Lovice Ochieng <lovisticsdev@gmail.com>
-Date:   Mon Sep 21 13:13:40 2026 +0300
-
-    feat: implement M0-M1b security research foundation
-    
-    Add lifecycle, policy, schemas, tooling, Foundry fixtures, M1a replay infrastructure, and M1b verification pipeline.
-
-commit e403d9e502cb5f7fe53e43994d73a7d13d7446b8
-Author: Lovice Ochieng <lovisticsdev@gmail.com>
-Date:   Sun Sep 20 15:37:30 2026 +0300
-
-    chore: initial l0vi0x project scaffold
+tests/test_schema_generation.py:16: AssertionError
+============================================================================================================================================== short test summary info ===============================================================================================================================================
+FAILED tests/test_schema_generation.py::test_all_plan_schemas_exist_and_are_generated_from_models - AssertionError: assert ['model_profi....schema.json'] == []
+1 failed, 98 passed, 1 skipped in 17.20s
+make: *** [Makefile:11: test] Error 1
+lovisticsdev@Mobilith:~/projects/l0vi0x$ make schemas-generate
+make schemas
+uv run --locked python -c "from pathlib import Path; from l0vi0x.core.schema_gen import generate_schemas; generate_schemas(Path('schemas'))"
+uv run --locked python -c "from pathlib import Path; from l0vi0x.core.schema_gen import check_schema_drift; p=Path('schemas'); drift=check_schema_drift(p); import sys; sys.exit('schema drift: '+', '.join(drift) if drift else 0)"
 lovisticsdev@Mobilith:~/projects/l0vi0x$ git status
 On branch development
-Your branch is up to date with 'origin/development'.
-
-Changes not staged for commit:
-  (use "git add/rm <file>..." to update what will be committed)
-  (use "git restore <file>..." to discard changes in working directory)
-
-        modified:   src/l0vi0x/core/models.py
-        modified:   src/l0vi0x/core/schema_gen.py
-        modified:   tests/test_schema_generation.py
+Your branch is ahead of 'origin/development' by 2 commits.
+  (use "git push" to publish your local commits)
 
 Untracked files:
   (use "git add <file>..." to include in what will be committed)
-        tests/test_m2_schemas.py
+        schemas/model_profile.schema.json
+        schemas/stack_policy.schema.json
 
-no changes added to commit (use "git add" and/or "git commit -a")
-(l0vi0x) lovisticsdev@Mobilith:~/projects/l0vi0x$ uv sync --locked --extra dev
-warning: `VIRTUAL_ENV=/mnt/c/Users/odong/Downloads/ethereum-mastery/l0vi0x/.venv` does not match the project environment path `.venv` and will be ignored; use `--active` to target the active environment instead
-Resolved 26 packages in 5ms
-Checked 25 packages in 1ms
-(l0vi0x) lovisticsdev@Mobilith:~/projects/l0vi0x$ PYTHONPATH=src uv run --locked pytest tests/test_m2_schemas.py tests/test_m2_adapters.py -v
-warning: `VIRTUAL_ENV=/mnt/c/Users/odong/Downloads/ethereum-mastery/l0vi0x/.venv` does not match the project environment path `.venv` and will be ignored; use `--active` to target the active environment instead
-================================================================================================================================================ test session starts =================================================================================================================================================
-platform linux -- Python 3.12.3, pytest-9.1.1, pluggy-1.6.0
-rootdir: /home/lovisticsdev/projects/l0vi0x
-configfile: pyproject.toml
-plugins: hypothesis-6.168.0, asyncio-1.4.0
-asyncio: mode=Mode.STRICT, debug=False, asyncio_default_fixture_loop_scope=None, asyncio_default_test_loop_scope=function
-collected 17 items                                                                                                                                                                                                                                                                                                   
-
-tests/test_m2_schemas.py .....                                                                                                                                                                                                                                                                                 [ 29%]
-tests/test_m2_adapters.py ............                                                                                                                                                                                                                                                                         [100%]
-
-================================================================================================================================================= 17 passed in 5.73s =================================================================================================================================================
-(l0vi0x) lovisticsdev@Mobilith:~/projects/l0vi0x$ 
-
-
-For M2.0 - M2.12 we implement everything upto where a test is needed to proceed. we'll proceed like that until M2.12
-
-This is useful — existing scaffold already anticipates several M2 concepts, we build against rather than duplicate:
-
-- `core/events.py` already registers `model_unavailable`, `quota_switch`, `refusal_logged`, `skeptic_family_exhausted`/`skeptic_unavailable`/`skeptic_second_opinion` as event kinds
-- `Task.exclude_families` and `WorkerResult.model_used`/`usage` already exist — the router's contract is partly pre-defined
-- `Scope.confidentiality: "public"|"private"` is almost certainly what "a private audit cannot select a dev stack" (M2.6) refers to
-
-**M2.0 done — 88/88 passing.** Quick summary of what landed:
-
-- `ModelProfile` and `StackPolicy` added to `core/models.py`, matching the existing `Strict` convention. `ModelProfile.family` reuses the same naming `Task.exclude_families`/`Finding.skeptic_families_excluded` already use — so M2.9's exclusion logic will key off the same field name across the codebase, not a parallel concept.
-- Both registered in `schema_gen.py`, generated into `schemas/model_profile.schema.json` and `schemas/stack_policy.schema.json`, confirmed stable across regeneration (`check_schema_drift` clean, twice).
-- The "prod stack cannot allow free/shadow-priced models" rule is enforced *at construction time* on `StackPolicy` itself (invalid config can't even be built) — belt-and-suspenders with the runtime gate that'll also check it in M2.6.
-- Fixed a pre-existing test (`test_schema_generation.py`) that hard-codes the total schema count — correctly caught the addition and needed a deliberate bump, unlike the earlier M1b bugs where tests were wrongly silent.
-
-One thing worth flagging before you move to M2.1: "a private audit cannot select a dev stack" (M2.6) will key off `Scope.confidentiality`, which already exists — I didn't need to add anything for that half of the rule, `StackPolicy.kind` plus the existing `Scope` field is enough. Wire the actual check in M2.6, not now.
-
-We need to move to **M2.1 — fake adapter, then `openai_compat`**.
+nothing added to commit but untracked files present (use "git add" to track)
+lovisticsdev@Mobilith:~/projects/l0vi0x$ git add schemas/model_profile.schema.json schemas/stack_policy.schema.json
+git commit --amend --no-edit
+[development 75cc156] M2.1 — Fake adapter first, then openai_compat
+ Date: Wed Sep 23 23:11:25 2026 +0300
+ 11 files changed, 716 insertions(+), 1 deletion(-)
+ create mode 100644 schemas/model_profile.schema.json
+ create mode 100644 schemas/stack_policy.schema.json
+ create mode 100644 src/l0vi0x/models/__init__.py
+ create mode 100644 src/l0vi0x/models/adapters/__init__.py
+ create mode 100644 src/l0vi0x/models/adapters/base.py
+ create mode 100644 src/l0vi0x/models/adapters/fake.py
+ create mode 100644 src/l0vi0x/models/adapters/openai_compat.py
+ create mode 100644 tests/test_m2_adapters.py
+ delete mode 100644 updated.zip
+lovisticsdev@Mobilith:~/projects/l0vi0x$ make test
+uv run --locked pytest tests
+........................................s...........................................................                                                                                                                                                                                                           [100%]
+99 passed, 1 skipped in 12.86s
+lovisticsdev@Mobilith:~/projects/l0vi0x$ 

@@ -110,6 +110,14 @@ class RateLimited(ModelUnavailable):
     `quota_switch` vs `model_unavailable` event logging)."""
 
 
+class NotFound(ModelUnavailable):
+    """The endpoint returned 404/410 for this model ID -- the shape a
+    deprecated or removed model takes over HTTP. Adapters raise this
+    specifically (rather than the base `ModelUnavailable`) so a caller
+    like `probe()` can detect "deprecated" structurally instead of
+    pattern-matching the error message."""
+
+
 class Timeout(AdapterError):
     pass
 

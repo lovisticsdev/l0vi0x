@@ -23,6 +23,7 @@ from l0vi0x.models.adapters.base import (
     CompletionResponse,
     MalformedStructuredOutput,
     ModelUnavailable,
+    NotFound,
     RateLimited,
     Timeout,
     Usage,
@@ -66,7 +67,7 @@ class OpenAICompatAdapter:
             if exc.code == 429:
                 raise RateLimited(f"{self.provider}/{self.model_id}: HTTP 429: {detail}") from exc
             if exc.code in (404, 410):
-                raise ModelUnavailable(f"{self.provider}/{self.model_id}: HTTP {exc.code} (deprecated or removed): {detail}") from exc
+                raise NotFound(f"{self.provider}/{self.model_id}: HTTP {exc.code} (deprecated or removed): {detail}") from exc
             if exc.code in (401, 403):
                 raise ModelUnavailable(f"{self.provider}/{self.model_id}: HTTP {exc.code} (auth/quota): {detail}") from exc
             raise ModelUnavailable(f"{self.provider}/{self.model_id}: HTTP {exc.code}: {detail}") from exc
@@ -122,9 +123,9 @@ class OpenAICompatAdapter:
     async def probe(self) -> Capabilities:
         """Confirm the model is reachable right now with the cheapest
         possible real call, rather than trusting static config. A 404/410
-        here (mapped to `ModelUnavailable` by `_post`) is exactly the
-        "deprecated model ID" case the router (M2.4) must fail over on --
-        `doctor` (M2.2) is what actually calls this in anger."""
+        here (raised as `NotFound` by `_post`) is exactly the "deprecated
+        model ID" case the router (M2.4) must fail over on -- `doctor`
+        (M2.2) is what actually calls this in anger."""
         payload = {
             "model": self.model_id,
             "messages": [{"role": "user", "content": "ping"}],
@@ -133,11 +134,8 @@ class OpenAICompatAdapter:
         try:
             await asyncio.to_thread(self._post, "/chat/completions", payload)
             deprecated = False
-        except ModelUnavailable as exc:
-            if "HTTP 404" in str(exc) or "HTTP 410" in str(exc) or "deprecated" in str(exc):
-                deprecated = True
-            else:
-                raise
+        except NotFound:
+            deprecated = True
         return Capabilities(
             provider=self.provider,
             model_id=self.model_id,
