@@ -501,6 +501,7 @@ class ReplayCertificate(Strict):
 PricingTier: TypeAlias = Literal["free", "shadow", "paid"]
 
 
+
 class ModelProfile(Strict):
     """A model as observed by `doctor`: what it can do right now, not just
     static config. One of these, per model, is what native probing writes
